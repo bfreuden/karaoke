@@ -3,14 +3,13 @@ import json
 import os
 import difflib
 
-from sympy.physics.units import force
-
+import string
 
 def normalize(word, nop=False):
     if nop:
         return word
     else:
-        return word.lower().replace(',', '').replace("'", "")
+        return word.lower().strip(string.punctuation).strip()
 
 def generate_transcript_words(transcript_json, normalize_words=False, force=False):
     output_file = f'{os.path.dirname(transcript_json)}/transcript{"-normalized" if normalize_words else ""}-words.txt'
@@ -21,7 +20,8 @@ def generate_transcript_words(transcript_json, normalize_words=False, force=Fals
     with open(output_file, mode="w", encoding="utf-8") as file:
         for segment in transcript['segments']:
             for word in segment['words']:
-                file.write(f'{normalize(word["text"], not normalize_words)}\n')
+                normalized_word = normalize(word["text"], not normalize_words)
+                file.write(f'{normalized_word}\n')
     return output_file
 
 def generate_lyrics_words(lyrics_txt, normalize_words=False, force=False):
@@ -32,7 +32,8 @@ def generate_lyrics_words(lyrics_txt, normalize_words=False, force=False):
         lyrics = file.read()
     with open(output_file, mode="w", encoding="utf-8") as file:
         for word in lyrics.split(" "):
-            file.write(f'{normalize(word, not normalize_words)}\n')
+            normalized_word = normalize(word, not normalize_words)
+            file.write(f'{normalized_word}\n')
     return output_file
 
 def fix_transcript(transcript_json, lyrics_txt, force=False):
@@ -42,19 +43,22 @@ def fix_transcript(transcript_json, lyrics_txt, force=False):
     lyrics_words_txt = generate_lyrics_words(lyrics_txt, normalize_words=False, force=force)
     with open(transcript_normalized_words_txt, mode='r', encoding='utf-8') as file:
         transcript_normalized_words = file.readlines()
-        transcript_normalized_words = [ word.rstrip() for word in transcript_normalized_words if len(word.rstrip()) != 0]
+        transcript_normalized_words = [ word.strip() for word in transcript_normalized_words if len(word.strip()) != 0]
     with open(lyrics_normalized_words_txt, mode='r', encoding='utf-8') as file:
         lyrics_normalized_words = file.readlines()
-        lyrics_normalized_words = [word.rstrip() for word in lyrics_normalized_words if len(word.rstrip()) != 0]
+        lyrics_normalized_words = [word.strip() for word in lyrics_normalized_words if len(word.strip()) != 0]
     # with open(transcript_words_txt, mode='r', encoding='utf-8') as file:
     #     transcript_lines = file.readlines()
     with open(lyrics_words_txt, mode='r', encoding='utf-8') as file:
         lyrics_words = file.readlines()
-        lyrics_words = [word.rstrip() for word in lyrics_words if len(word.rstrip()) != 0]
+        lyrics_words = [word.strip() for word in lyrics_words if len(word.strip()) != 0]
     for line in difflib.unified_diff(transcript_normalized_words, lyrics_normalized_words, fromfile='transcript', tofile='lyrics', lineterm='', n=0):
         print(line)
 
 if __name__ == '__main__':
-    from get_or_create_karaoke_project_data import get_project_dir
-    project_dir = get_project_dir('https://www.youtube.com/watch?v=huMElOuIMmk')
+    from sample_projects import ma_direction
+    from get_or_create_karaoke_project_data import get_project_dir_from_dict, get_or_create_karaoke_project_data_from_dict
+    project = ma_direction
+    karaoke_project_data = get_or_create_karaoke_project_data_from_dict(project, force=False)
+    project_dir = get_project_dir_from_dict(karaoke_project_data)
     fix_transcript(f'{project_dir}/transcript.json', f'{project_dir}/lyrics.txt', force=True)
