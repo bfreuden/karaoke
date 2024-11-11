@@ -10,6 +10,10 @@ def get_project_dir(youtube_url, force=False):
     karaoke_project_data = get_or_create_karaoke_project_data(youtube_url, force)
     return f'{output_dir}/{karaoke_project_data["slug"]}'
 
+def get_project_dir_from_dict(karaoke_project_data):
+    from output_dir import output_dir
+    return f'{output_dir}/{karaoke_project_data["slug"]}'
+
 def get_or_create_karaoke_project_data_from_dict(project_dict, force=False):
     youtube_url = project_dict['youtube_url']
     genius_url = project_dict['genius_url']
@@ -64,8 +68,8 @@ def get_youtube_video_title(youtube_url):
 
 
 if __name__ == '__main__':
-    from sample_projects import dancing_in_the_dark
-    karaoke_project_data = get_or_create_karaoke_project_data_from_dict(dancing_in_the_dark, force=True)
+    from sample_projects import ma_direction
+    karaoke_project_data = get_or_create_karaoke_project_data_from_dict(ma_direction, force=True)
     print(f'YouTube URL: {karaoke_project_data["youtube_url"]}')
     print(f'Genius URL: {karaoke_project_data["genius_url"]}')
     print(f'Title: {karaoke_project_data["title"]}')
