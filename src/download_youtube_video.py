@@ -1,12 +1,6 @@
 import os.path
 
 from pytube import YouTube
-import requests
-from bs4 import BeautifulSoup
-from output_dir import output_dir
-
-import unicodedata
-import re
 
 pytube_patched = False
 
@@ -60,26 +54,7 @@ def maybe_patch_pytube():
     pytube.cipher.get_throttling_function_name = patched_get_throttling_function_name
 
 
-def slugify(value, allow_unicode=False):
-    """
-    Taken from https://github.com/django/django/blob/master/django/utils/text.py
-    Convert to ASCII if 'allow_unicode' is False. Convert spaces or repeated
-    dashes to single dashes. Remove characters that aren't alphanumerics,
-    underscores, or hyphens. Convert to lowercase. Also strip leading and
-    trailing whitespace, dashes, and underscores.
-    """
-    value = str(value)
-    if allow_unicode:
-        value = unicodedata.normalize('NFKC', value)
-    else:
-        value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
-    value = re.sub(r'[^\w\s-]', '', value.lower())
-    return re.sub(r'[-\s]+', '-', value).strip('-_')
-
-
-def download_youtube_video(youtube_url, output_basedir=f"{output_dir}/../output", force=False):
-    title = get_youtube_video_title(youtube_url)
-    output_dir = f'{output_basedir}/{slugify(title)}'
+def download_youtube_video(youtube_url, output_dir, force=False):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     output_file = f'{output_dir}/video.mp4'
@@ -94,16 +69,8 @@ def download_youtube_video(youtube_url, output_basedir=f"{output_dir}/../output"
         .download(output_path=os.path.dirname(output_file), filename=os.path.basename(output_file))
     return output_file
 
-def get_youtube_video_title(youtube_url):
-    r = requests.get(youtube_url)
-    soup = BeautifulSoup(r.text)
-    link = soup.find_all(name="title")[0]
-    title = str(link)
-    title = title.replace("<title>", "")
-    title = title.replace("</title>", "")
-    title = title.replace("YouTube", "")
-    return title
-
-
 if __name__ == '__main__':
-    download_youtube_video('https://www.youtube.com/watch?v=huMElOuIMmk', force=True)
+    from get_or_create_karaoke_project_data import get_project_dir
+    youtube_url = 'https://www.youtube.com/watch?v=huMElOuIMmk'
+    project_dir = get_project_dir(youtube_url)
+    download_youtube_video(youtube_url, project_dir, force=True)
