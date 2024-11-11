@@ -14,12 +14,15 @@ def download_lyrics(genius_url, output_dir, force=False):
         for lyrics_div in lyrics_divs:
             text_nodes = lyrics_div.find_all(text=True)
             for text_node in text_nodes:
-                file.write(str(text_node))
-                file.write('\n')
+                line = str(text_node)
+                if not "[" in line:
+                    file.write(line)
+                    file.write('\n')
 
 if __name__ == '__main__':
-    from get_or_create_karaoke_project_data import get_project_dir
-    youtube_url = 'https://www.youtube.com/watch?v=huMElOuIMmk'
-    project_dir = get_project_dir(youtube_url)
-    genius_url = 'https://genius.com/Amy-macdonald-dancing-in-the-dark-lyrics'
-    download_lyrics(genius_url, project_dir, force=True)
+    from sample_projects import ma_direction
+    from get_or_create_karaoke_project_data import get_project_dir_from_dict, get_or_create_karaoke_project_data_from_dict
+    project = ma_direction
+    karaoke_project_data = get_or_create_karaoke_project_data_from_dict(project, force=False)
+    project_dir = get_project_dir_from_dict(karaoke_project_data)
+    download_lyrics(karaoke_project_data["genius_url"], project_dir, force=True)
