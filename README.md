@@ -1,8 +1,11 @@
-# pyenv
+
+# Python installation procedure
+
+## Windows
+
+### Install Pyenv
 
 https://github.com/pyenv-win/pyenv-win
-
-## Installation
 
 https://github.com/pyenv-win/pyenv-win/blob/master/docs/installation.md#powershell
 
@@ -15,36 +18,83 @@ And and run:
 Invoke-WebRequest -UseBasicParsing -Uri "https://raw.githubusercontent.com/pyenv-win/pyenv-win/master/pyenv-win/install-pyenv-win.ps1" -OutFile "./install-pyenv-win.ps1"; &"./install-pyenv-win.ps1"
 ```
 
-## Install Python 3.10
+### Install Python 3.10
 
 ```
-pyenv install 3.10
+pyenv install 3.10.11
 ```
 
-## Create a virtual env for karaoke
+### Create a virtual env 
 
 ```
 cd karaoke
 pyenv local 3.10.11
-python venv env
+python -m venv env
 ```
 
-## Activate virtual env for karaoke
+### Activate the virtual env
 ```
  .\env\Scripts\Activate.ps1
 ```
 
-## Install requirements
+### Install requirements
 ```
 pip install -r requirements.txt
 ```
 
-## Install Python requirements
+### Install additional Python requirements
 
 Download ffmpeg binaries 
 https://www.gyan.dev/ffmpeg/builds/
 https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip
 
 And put the bin directory into the PATH.
+
+
+
+## Linux
+
+### Install Pyenv
+
+https://github.com/pyenv/pyenv
+
+https://github.com/pyenv/pyenv?tab=readme-ov-file#unixmacos
+
+Open a terminal then run:
+```
+curl https://pyenv.run | bash 
+```
+
+### Install Python 3.10
+
+```
+pyenv install 3.10.11
+```
+
+### Create a virtual env 
+
+```
+cd karaoke
+pyenv local 3.10.11
+python -m venv env
+```
+
+### Activate the virtual env
+```
+source env/bin/activate 
+```
+
+### Install requirements
+```
+pip install -r requirements.txt
+```
+
+### Install additional Python requirements
+
+Download ffmpeg binaries:
+```
+sudo apt install ffmpeg
+```
+
 
 
