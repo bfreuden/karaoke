@@ -52,5 +52,6 @@ def split_vocals_and_accompaniment(audio_mp3, force=False):
 
 
 if __name__ == '__main__':
-    from output_dir import output_dir
-    vocals_wav, accompaniment_wav = split_vocals_and_accompaniment(f'{output_dir}/dancing-in-the-dark/audio.mp3', force=True)
+    from sample_projects import get_sample_project_items
+    project_dir, = get_sample_project_items('dancing_in_the_dark', 'project_dir')
+    vocals_wav, accompaniment_wav = split_vocals_and_accompaniment(f'{project_dir}/audio.mp3', force=True)

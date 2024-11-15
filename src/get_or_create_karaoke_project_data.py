@@ -7,25 +7,30 @@ from bs4 import BeautifulSoup
 
 def get_project_dir(youtube_url, force=False):
     from output_dir import output_dir
-    karaoke_project_data = get_or_create_karaoke_project_data(youtube_url, force)
+    karaoke_project_data = get_or_create_project(youtube_url, force)
     return f'{output_dir}/{karaoke_project_data["slug"]}'
 
-def get_project_dir_from_dict(karaoke_project_data):
+def get_project_dir_from_data(karaoke_project_data):
     from output_dir import output_dir
     return f'{output_dir}/{karaoke_project_data["slug"]}'
 
-def get_or_create_karaoke_project_data_from_dict(project_dict, force=False):
-    youtube_url = project_dict['youtube_url']
-    genius_url = project_dict['genius_url']
-    language = project_dict['language']
-    model = project_dict['model']
-    return get_or_create_karaoke_project_data(youtube_url, genius_url, language, model, force)
+def get_or_create_project_from_attributes(project_attributes, force=False):
+    youtube_url = project_attributes['youtube_url']
+    genius_url = project_attributes['genius_url']
+    language = project_attributes['language']
+    model = project_attributes['model']
+    return get_or_create_project(youtube_url, genius_url, language, model, force)
 
-def get_or_create_karaoke_project_data(youtube_url, genius_url=None, language=None, model='medium', force=False):
+def get_project(youtube_url):
+    return get_or_create_project(youtube_url, force=False, get_only=True)
+
+def get_or_create_project(youtube_url, genius_url=None, language=None, model='medium', force=False, get_only=False):
     from output_dir import output_dir
     projects_pickle = f'{output_dir}/projects.pickle'
-    if not os.path.exists(projects_pickle):
+    if not get_only and not os.path.exists(projects_pickle):
         projects = {}
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
     else:
         with open(projects_pickle, 'rb') as file:
             projects = pickle.load(file)
@@ -68,10 +73,11 @@ def get_youtube_video_title(youtube_url):
 
 
 if __name__ == '__main__':
-    from sample_projects import ma_direction
-    karaoke_project_data = get_or_create_karaoke_project_data_from_dict(ma_direction, force=True)
-    print(f'YouTube URL: {karaoke_project_data["youtube_url"]}')
-    print(f'Genius URL: {karaoke_project_data["genius_url"]}')
-    print(f'Title: {karaoke_project_data["title"]}')
-    print(f'Slug: {karaoke_project_data["slug"]}')
-    print(f'Language: {karaoke_project_data["language"]}')
+    from sample_projects import sample_projects
+    project_attributes = sample_projects['dancing_in_the_dark']
+    project_data = get_or_create_project_from_attributes(project_attributes, force=True)
+    print(f'YouTube URL: {project_data["youtube_url"]}')
+    print(f'Genius URL: {project_data["genius_url"]}')
+    print(f'Title: {project_data["title"]}')
+    print(f'Slug: {project_data["slug"]}')
+    print(f'Language: {project_data["language"]}')

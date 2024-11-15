@@ -20,19 +20,18 @@ def transcript_speech_to_text(vocals_mp3, language=None, model="medium", initial
 
 
 if __name__ == '__main__':
-    from output_dir import output_dir
+    from sample_projects import get_sample_project_items
+    project_dir, language, model = get_sample_project_items('dancing_in_the_dark', 'project_dir', 'language', 'model')
+
     import time
-    project = "sexion-dassaut-ma-direction-clip-officiel"
     track = "audio"
-    language = "fr"
-    model = "large-v3"
-    lyrics_txt = f'{output_dir}/{project}/lyrics.txt'
-    if lyrics_txt is not None and os.path.exists(lyrics_txt):
-        with open(lyrics_txt, mode='r', encoding="utf-8") as file:
-            initial_prompt = file.read()
-        initial_prompt = f'The input will be a song which official lyrics are:\n\n{initial_prompt}'
+    initial_prompt = None
+    # lyrics_txt = f'{project_dir}/lyrics.txt'
+    # if lyrics_txt is not None and os.path.exists(lyrics_txt):
+    #     with open(lyrics_txt, mode='r', encoding="utf-8") as file:
+    #         initial_prompt = file.read()
+    #     initial_prompt = f'The input will be a song which official lyrics are:\n\n{initial_prompt}'
     start = time.time()
-    # transcript_speech_to_text(f'{output_dir}/dancing-in-the-dark/audio.mp3', "en", True)
-    transcript_speech_to_text(f'{output_dir}/{project}/{track}.mp3', language=language, model=model, initial_prompt=initial_prompt, force=True)
+    transcript_speech_to_text(f'{project_dir}/{track}.mp3', language=language, model=model, initial_prompt=initial_prompt, force=True)
     end = time.time()
     print(f'Elapsed: {end - start}')

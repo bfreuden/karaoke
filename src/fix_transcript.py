@@ -56,9 +56,6 @@ def fix_transcript(transcript_json, lyrics_txt, force=False):
         print(line)
 
 if __name__ == '__main__':
-    from sample_projects import ma_direction
-    from get_or_create_karaoke_project_data import get_project_dir_from_dict, get_or_create_karaoke_project_data_from_dict
-    project = ma_direction
-    karaoke_project_data = get_or_create_karaoke_project_data_from_dict(project, force=False)
-    project_dir = get_project_dir_from_dict(karaoke_project_data)
+    from sample_projects import get_sample_project_dir
+    project_dir = get_sample_project_dir('dancing_in_the_dark')
     fix_transcript(f'{project_dir}/transcript.json', f'{project_dir}/lyrics.txt', force=True)

@@ -2,6 +2,9 @@ import os.path
 
 from pytube import YouTube
 
+from src.get_or_create_karaoke_project_data import get_project_dir
+from src.sample_projects import get_sample_project_dir
+
 pytube_patched = False
 
 def maybe_patch_pytube():
@@ -70,7 +73,6 @@ def download_youtube_video(youtube_url, output_dir, force=False):
     return output_file
 
 if __name__ == '__main__':
-    from get_or_create_karaoke_project_data import get_project_dir
-    youtube_url = 'https://www.youtube.com/watch?v=huMElOuIMmk'
-    project_dir = get_project_dir(youtube_url)
+    from sample_projects import get_sample_project_items
+    project_dir, youtube_url = get_sample_project_items('dancing_in_the_dark', 'project_dir', 'youtube_url')
     download_youtube_video(youtube_url, project_dir, force=True)

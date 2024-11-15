@@ -16,5 +16,6 @@ def extract_mp3_from_mp4(mp4, filename="audio.mp3", force=False):
 
 
 if __name__ == '__main__':
-    from output_dir import output_dir
-    extract_mp3_from_mp4(f'{output_dir}/dancing-in-the-dark/video.mp4', force=True)
+    from sample_projects import get_sample_project_dir
+    project_dir = get_sample_project_dir('dancing_in_the_dark')
+    extract_mp3_from_mp4(f'{project_dir}/video.mp4', force=True)
