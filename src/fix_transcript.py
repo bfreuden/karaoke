@@ -134,6 +134,7 @@ def flatten_alignment_data(alignment_data_json):
         json.dump(flat_words, output, indent = 2, ensure_ascii = False)
     return output_file
 
+
 def fix_transcript(transcript_json, lyrics_txt, language, force=False):
     alignment_data_lyrics_json, words_lyrics_txt = generate_alignment_data_from_lyrics(lyrics_txt, language, force)
     alignment_data_transcript_json, words_transcript_txt = generate_alignment_data_from_transcript(transcript_json, language, force)
@@ -153,9 +154,11 @@ def fix_transcript(transcript_json, lyrics_txt, language, force=False):
     transcript_last_common_line = 1
     transcript_common_line = None
     transcript_next_common_line = None
+    transcript_diff_count = None
     lyrics_last_common_line = 1
     lyrics_common_line = None
     lyrics_next_common_line = None
+    lyrics_diff_count = None
     transcript_diff_count = 0
     lyrics_diff_count = 0
     transcript_removed = []
@@ -180,10 +183,13 @@ def fix_transcript(transcript_json, lyrics_txt, language, force=False):
                 lyrics_added.append(line[1:])
             if transcript_diff_count + lyrics_diff_count == len(transcript_removed) + len(lyrics_added):
                 # deal with common words by setting timings of transcript on tokens of lyrics
-                set_transcript_timings_on_lyrics(flat_alignment_data_lyrics, flat_alignment_data_transcript,
-                                                 lyrics_common_line, lyrics_last_common_line, transcript_common_line,
-                                                 transcript_last_common_line)
+                set_common_transcript_timings_on_lyrics(flat_alignment_data_lyrics, flat_alignment_data_transcript,
+                                                        lyrics_common_line, lyrics_last_common_line, transcript_common_line,
+                                                        transcript_last_common_line)
                 # deal with diff
+                set_diff_transcript_timings_on_lyrics(flat_alignment_data_lyrics, flat_alignment_data_transcript,
+                                                      lyrics_diff_count, lyrics_diff_line, transcript_diff_count,
+                                                      transcript_diff_line)
 
                 # continue
                 transcript_last_common_line = transcript_next_common_line
@@ -193,12 +199,97 @@ def fix_transcript(transcript_json, lyrics_txt, language, force=False):
     lyrics_common_line = len(lyrics_words)
 
     # deal with last common words by setting timings of transcript on tokens of lyrics
-    set_transcript_timings_on_lyrics(flat_alignment_data_lyrics, flat_alignment_data_transcript,
-                                     lyrics_common_line, lyrics_last_common_line, transcript_common_line,
-                                     transcript_last_common_line)
+    set_common_transcript_timings_on_lyrics(flat_alignment_data_lyrics, flat_alignment_data_transcript,
+                                            lyrics_common_line, lyrics_last_common_line, transcript_common_line,
+                                            transcript_last_common_line)
+
+    # deal with lyrics words that have not been aligned (because the diff contains less words than lyrics)
+    set_missing_timings_on_lyrics(flat_alignment_data_lyrics)
 
     # save fixed transcript
     save_fixed_transcript(transcript_json, flat_alignment_data_lyrics, alignment_data_lyrics_json)
+
+
+
+
+def set_missing_timings_on_lyrics(flat_alignment_data_lyrics):
+    lyrics_segments_with_timings = [list(g) for k, g in
+                                    groupby(flat_alignment_data_lyrics, key=lambda x: x['segment_index'])]
+    for lyrics_segment_with_timings in lyrics_segments_with_timings:
+        previous_word_with_timings = None
+        words_without_timings = []
+        next_word_with_timings = None
+        for i, word in enumerate(lyrics_segment_with_timings):
+            if 'start' not in word:
+                words_without_timings.append(word)
+            else:
+                if len(words_without_timings) == 0:
+                    # remember it the last word with timing before the words without timings
+                    previous_word_with_timings = word
+                else:
+                    # current word is the first word with timings after the words without timings
+                    next_word_with_timings = word
+                    set_missing_timings_on_lyrics_segment(flat_alignment_data_lyrics, lyrics_segment_with_timings,
+                                                          previous_word_with_timings, words_without_timings, next_word_with_timings)
+                    # reset
+                    previous_word_with_timings = word
+                    words_without_timings.clear()
+                    next_word_with_timings = None
+        # maybe the last word was missing timings
+        if len(words_without_timings) != 0:
+            set_missing_timings_on_lyrics_segment(flat_alignment_data_lyrics, lyrics_segment_with_timings, previous_word_with_timings,
+                                                  words_without_timings, next_word_with_timings)
+
+
+def set_linear_timings_on(start, end, words):
+    words[0]['start'] = start
+    incr = (end-start)/len(words)
+    for i in range(len(words)):
+        words[i]['start'] = round(start + i*incr, 2)
+        words[i]['end'] =  round(start + (i+1)*incr, 2)
+        pass
+    words[-1]['end'] = end
+    pass
+
+
+def set_missing_timings_on_lyrics_segment(flat_alignment_data_lyrics, lyrics_segment_with_timings,
+                                          previous_word_with_timings, words_without_timings, next_word_with_timings):
+    if previous_word_with_timings is None:
+        # let's insert the words withing the timings of the next word
+        start = next_word_with_timings['start']
+        end = next_word_with_timings['end']
+        set_linear_timings_on(start, end, [*words_without_timings, next_word_with_timings])
+        pass
+    elif next_word_with_timings is None:
+        # let's insert the words withing the timings of the previous word
+        start = previous_word_with_timings['start']
+        end = previous_word_with_timings['end']
+        set_linear_timings_on(start, end, [previous_word_with_timings, *words_without_timings])
+    else:
+        # let's insert the words withing the start of the previous word and the end of the next word
+        start = previous_word_with_timings['start']
+        end = next_word_with_timings['end']
+        set_linear_timings_on(start, end, [previous_word_with_timings, *words_without_timings, next_word_with_timings])
+        pass
+
+def set_diff_transcript_timings_on_lyrics(flat_alignment_data_lyrics, flat_alignment_data_transcript, lyrics_diff_count,
+                                          lyrics_diff_line, transcript_diff_count, transcript_diff_line):
+    # the diff is only interesting when there are lyrics words: we just want to set timings on lyrics words
+    # because when there are only (removed) transcript words, we'll simply assume the speech-to-text
+    # has over-generated random words...
+    if lyrics_diff_count > 0:
+        nb_words = min(lyrics_diff_count, transcript_diff_count)
+        set_nb_transcript_timings_on_lyrics(flat_alignment_data_lyrics, flat_alignment_data_transcript,
+                                            lyrics_diff_line, transcript_diff_line, nb_words)
+        # if transcript has 1 more  word (removed) than lyrics, let's assume that the speech to text
+        # has split one word into 2, so let's use the end of the second word as the end as
+        # the end of the lyrics word
+        if transcript_diff_count == lyrics_diff_count + 1:
+            # propagate the end of the transcript second word (but not more)
+            flat_alignment_data_lyrics[lyrics_diff_line + lyrics_diff_count - 2]['end'] = \
+            flat_alignment_data_transcript[transcript_diff_line + transcript_diff_count - 2]['end']
+        # if lyrics have more words than transcript, we need to invent new timestamps...
+        # but we'll do it at the end
 
 
 def save_fixed_transcript(transcript_json, flat_alignment_data_lyrics, alignment_data_lyrics_json):
@@ -218,16 +309,24 @@ def save_fixed_transcript(transcript_json, flat_alignment_data_lyrics, alignment
             json.dump(alignment_data_lyrics, output, indent=2, ensure_ascii=False)
 
 
-def set_transcript_timings_on_lyrics(flat_alignment_data_lyrics, flat_alignment_data_transcript,
-                                     lyrics_common_line, lyrics_last_common_line, transcript_common_line,
-                                     transcript_last_common_line):
+def set_common_transcript_timings_on_lyrics(flat_alignment_data_lyrics, flat_alignment_data_transcript,
+                                            lyrics_common_line, lyrics_last_common_line, transcript_common_line,
+                                            transcript_last_common_line):
     assert transcript_common_line - transcript_last_common_line == lyrics_common_line - lyrics_last_common_line
     if transcript_common_line >= transcript_last_common_line:
-        for i in range(-1, transcript_common_line - transcript_last_common_line):
-            flat_alignment_data_lyrics[lyrics_last_common_line + i]['start'] = \
-            flat_alignment_data_transcript[transcript_last_common_line + i]['start']
-            flat_alignment_data_lyrics[lyrics_last_common_line + i]['end'] = \
-            flat_alignment_data_transcript[transcript_last_common_line + i]['end']
+        nb_words = transcript_common_line - transcript_last_common_line + 1
+        set_nb_transcript_timings_on_lyrics(flat_alignment_data_lyrics, flat_alignment_data_transcript,
+                                            lyrics_last_common_line, transcript_last_common_line, nb_words)
+
+
+def set_nb_transcript_timings_on_lyrics(flat_alignment_data_lyrics, flat_alignment_data_transcript,
+                                        lyrics_from_index, transcript_from_index, nb_words):
+    # -1 because diff indices start from 0 instead of 0
+    for i in range(-1, nb_words-1):
+        flat_alignment_data_lyrics[lyrics_from_index + i]['start'] = \
+            flat_alignment_data_transcript[transcript_from_index + i]['start']
+        flat_alignment_data_lyrics[lyrics_from_index + i]['end'] = \
+            flat_alignment_data_transcript[transcript_from_index + i]['end']
 
 
 def diff_positions(diff_line_str, diff_count_str):
