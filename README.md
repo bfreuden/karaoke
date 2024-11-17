@@ -42,6 +42,12 @@ python -m venv env
 pip install -r requirements.txt
 ```
 
+### Install languages
+```
+python -m spacy download en_core_web_sm
+```
+
+
 ### Install additional Python requirements
 
 Download ffmpeg binaries 
@@ -88,6 +94,12 @@ source env/bin/activate
 ```
 pip install -r requirements.txt
 ```
+
+### Install languages
+```
+python -m spacy download en_core_web_sm
+```
+
 
 ### Install additional Python requirements
 
