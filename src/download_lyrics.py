@@ -7,6 +7,7 @@ def download_lyrics(genius_url, output_dir, force=False):
     lyrics_txt = f'{output_dir}/lyrics.txt'
     if os.path.exists(lyrics_txt) and not force:
         return lyrics_txt
+    os.makedirs(output_dir)
     r = requests.get(genius_url)
     soup = BeautifulSoup(r.text, "html.parser")
     with open(lyrics_txt, mode="w", encoding="utf-8") as file:
@@ -21,5 +22,7 @@ def download_lyrics(genius_url, output_dir, force=False):
 
 if __name__ == '__main__':
     from sample_projects import get_sample_project_items
-    project_dir, genius_url = get_sample_project_items('dancing_in_the_dark', 'project_dir', 'genius_url')
+    project = 'dancing_in_the_dark'
+    # project = 'ma_direction'
+    project_dir, genius_url = get_sample_project_items(project, 'project_dir', 'genius_url')
     download_lyrics(genius_url, project_dir, force=True)
