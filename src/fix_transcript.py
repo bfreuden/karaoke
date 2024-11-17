@@ -36,7 +36,8 @@ def generate_alignment_data_from_lyrics(lyrics_txt, language, force=False):
             for token in doc:
                 if token.pos_ == 'PUNCT':
                     # attach to current token
-                    word_data['text'] = f"{word_data['text']}{token.text}"
+                    spaces = '' if last_end == token.idx else ' ' * (token.idx - last_end)
+                    word_data['text'] = f"{word_data['text']}{spaces}{token.text}"
                 else:
                     # if token.idx == last_end it is be a multi-token word ("it's" => "it" + "is")
                     if token.idx != last_end:
