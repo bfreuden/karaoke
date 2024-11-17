@@ -75,6 +75,7 @@ def get_youtube_video_title(youtube_url):
 if __name__ == '__main__':
     from sample_projects import sample_projects
     project_attributes = sample_projects['dancing_in_the_dark']
+    # project_attributes = sample_projects['ma_direction']
     project_data = get_or_create_project_from_attributes(project_attributes, force=True)
     print(f'YouTube URL: {project_data["youtube_url"]}')
     print(f'Genius URL: {project_data["genius_url"]}')
