@@ -7,6 +7,7 @@ from split_vocals_and_accompaniment import split_vocals_and_accompaniment
 from src.fix_transcript import fix_transcript
 from transcript_speech_to_text import transcript_speech_to_text
 from convert_transcript_to_ass import convert_transcript_to_segments_ass
+from fix_segment_start_end_timings import fix_segment_start_end_timings
 
 if __name__ == '__main__':
 
@@ -41,5 +42,7 @@ if __name__ == '__main__':
     transcript_json = transcript_speech_to_text(vocals_mp3, language=language, model=model, initial_prompt=None, force=force)
     print("-- Aligning transcription on official lyrics")
     fixed_transcript_json = fix_transcript(transcript_json, lyrics_txt, language, force=force)
+    print("-- Adjusting segment limits")
+    fixed_transcript_2_json = fix_segment_start_end_timings(transcript_json, vocals_wav, convolution_window=0.05, threshold=50, force=force)
     print("-- Generating subtitles")
-    convert_transcript_to_segments_ass(fixed_transcript_json)
+    convert_transcript_to_segments_ass(fixed_transcript_2_json)

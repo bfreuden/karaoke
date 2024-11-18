@@ -39,4 +39,4 @@ def ass_time(seconds):
 if __name__ == '__main__':
     from sample_projects import get_sample_project_dir
     project_dir = get_sample_project_dir('dancing_in_the_dark')
-    convert_transcript_to_segments_ass(f'{project_dir}/transcript-fixed.json', force=True)
+    convert_transcript_to_segments_ass(f'{project_dir}/transcript-fixed-2.json', force=True)
