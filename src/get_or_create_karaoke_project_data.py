@@ -6,12 +6,12 @@ import requests
 from bs4 import BeautifulSoup
 
 def get_project_dir(youtube_url, force=False):
-    from output_dir import output_dir
+    from directories import output_dir
     karaoke_project_data = get_or_create_project(youtube_url, force)
     return f'{output_dir}/{karaoke_project_data["slug"]}'
 
 def get_project_dir_from_data(karaoke_project_data):
-    from output_dir import output_dir
+    from directories import output_dir
     return f'{output_dir}/{karaoke_project_data["slug"]}'
 
 def get_or_create_project_from_attributes(project_attributes, force=False):
@@ -25,7 +25,7 @@ def get_project(youtube_url):
     return get_or_create_project(youtube_url, force=False, get_only=True)
 
 def get_or_create_project(youtube_url, genius_url=None, language=None, model='medium', force=False, get_only=False):
-    from output_dir import output_dir
+    from directories import output_dir
     projects_pickle = f'{output_dir}/projects.pickle'
     if not get_only and not os.path.exists(projects_pickle):
         projects = {}

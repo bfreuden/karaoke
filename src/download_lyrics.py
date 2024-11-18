@@ -7,7 +7,8 @@ def download_lyrics(genius_url, output_dir, force=False):
     lyrics_txt = f'{output_dir}/lyrics.txt'
     if os.path.exists(lyrics_txt) and not force:
         return lyrics_txt
-    os.makedirs(output_dir)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
     r = requests.get(genius_url)
     soup = BeautifulSoup(r.text, "html.parser")
     with open(lyrics_txt, mode="w", encoding="utf-8") as file:

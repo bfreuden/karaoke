@@ -208,10 +208,7 @@ def fix_transcript(transcript_json, lyrics_txt, language, force=False):
     set_missing_timings_on_lyrics(flat_alignment_data_lyrics)
 
     # save fixed transcript
-    save_fixed_transcript(transcript_json, flat_alignment_data_lyrics, alignment_data_lyrics_json)
-
-
-
+    return save_fixed_transcript(transcript_json, flat_alignment_data_lyrics, alignment_data_lyrics_json)
 
 def set_missing_timings_on_lyrics(flat_alignment_data_lyrics):
     lyrics_segments_with_timings = [list(g) for k, g in
@@ -308,6 +305,7 @@ def save_fixed_transcript(transcript_json, flat_alignment_data_lyrics, alignment
         output_file = f'{os.path.dirname(transcript_json)}/transcript-fixed.json'
         with open(output_file, mode="w", encoding="utf-8") as output:
             json.dump(alignment_data_lyrics, output, indent=2, ensure_ascii=False)
+        return output_file
 
 
 def set_common_transcript_timings_on_lyrics(flat_alignment_data_lyrics, flat_alignment_data_transcript,

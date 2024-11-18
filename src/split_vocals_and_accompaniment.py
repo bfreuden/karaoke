@@ -1,6 +1,6 @@
 import os
 
-from output_dir import output_dir
+from directories import output_dir
 pretrained_models = os.path.normpath(f'{output_dir}/pretrained_models')
 os.environ['MODEL_PATH'] = pretrained_models
 

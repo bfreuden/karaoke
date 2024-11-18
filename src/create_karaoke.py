@@ -6,6 +6,7 @@ from get_or_create_karaoke_project_data import get_or_create_project_from_attrib
 from split_vocals_and_accompaniment import split_vocals_and_accompaniment
 from src.fix_transcript import fix_transcript
 from transcript_speech_to_text import transcript_speech_to_text
+from convert_transcript_to_ass import convert_transcript_to_segments_ass
 
 if __name__ == '__main__':
 
@@ -37,6 +38,8 @@ if __name__ == '__main__':
     print("-- Converting accompaniment track to mp3")
     accompaniment_mp3 = convert_wav_to_mp3(accompaniment_wav, force=force)
     print("-- Running speech to text on audio track")
-    transcript_json = transcript_speech_to_text(audio_mp3, language=language, model=model, initial_prompt=None, force=force)
+    transcript_json = transcript_speech_to_text(vocals_mp3, language=language, model=model, initial_prompt=None, force=force)
     print("-- Aligning transcription on official lyrics")
-    fix_transcript(transcript_json, lyrics_txt, force=force)
+    fixed_transcript_json = fix_transcript(transcript_json, lyrics_txt, language, force=force)
+    print("-- Generating subtitles")
+    convert_transcript_to_segments_ass(fixed_transcript_json)
