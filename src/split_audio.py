@@ -62,7 +62,10 @@ def rising_edges(binary_signal):
         index += 1
 
 # main function
-def split_audio(input_filename, output_dir=None, silence_threshold=1e-6, min_silence_length=3., step_duration=None, dry_run=False, force=False):
+def split_audio(input_filename, base_output_dir=None, silence_threshold=1e-6, min_silence_length=3., step_duration=None, dry_run=False, force=False):
+    window_duration = min_silence_length
+    if step_duration is None:
+        step_duration = window_duration / 10.
     params = {
         'silence_threshold': silence_threshold,
         'min_silence_length': min_silence_length,
@@ -70,11 +73,12 @@ def split_audio(input_filename, output_dir=None, silence_threshold=1e-6, min_sil
     }
     summary_json = f'{os.path.dirname(input_filename)}/voice-segments.json'
 
-    if output_dir is None:
-        output_dir = os.path.dirname(input_filename)
-    if not recompute_required(summary_json, output_dir, params, force):
+    if base_output_dir is None:
+        base_output_dir = os.path.dirname(input_filename)
+    if not recompute_required(summary_json, base_output_dir, params, force):
         return summary_json
 
+    output_dir = f'{base_output_dir}/voice-segments'
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -84,9 +88,6 @@ def split_audio(input_filename, output_dir=None, silence_threshold=1e-6, min_sil
         'segments': segments
     }
     output_filename_prefix = os.path.splitext(os.path.basename(input_filename))[0]
-    window_duration = min_silence_length
-    if step_duration is None:
-        step_duration = window_duration / 10.
     print("Splitting {} where energy is below {}% for longer than {}s.".format(
         input_filename,
         silence_threshold * 100.,
@@ -123,17 +124,18 @@ def split_audio(input_filename, output_dir=None, silence_threshold=1e-6, min_sil
         last_stop = stop
         last_i = i
         segments.append(trim_right_silence_and_write_file(dry_run, i, max_energy, output_dir, output_filename_prefix, sample_rate,
-                                          samples, silence_threshold, start, step_size, stop, window_size))
+                                                          samples, silence_threshold, start, step_size, stop, window_size))
     if last_stop is not None and last_stop < len(samples):
-        segments.append(trim_right_silence_and_write_file(dry_run, last_i+1, max_energy, output_dir, output_filename_prefix, sample_rate,
-                                          samples, silence_threshold, last_stop, step_size, len(samples), window_size))
+        segments.append(trim_right_silence_and_write_file(dry_run, last_i + 1, max_energy, output_dir, output_filename_prefix, sample_rate,
+                                                          samples, silence_threshold, last_stop, step_size, len(samples), window_size))
 
     with open(summary_json, mode="w", encoding="utf-8") as file:
         json.dump(summary, file, indent=2, ensure_ascii=False)
     return summary_json
 
 
-def recompute_required(summary_json, output_dir, params, force):
+def recompute_required(summary_json, base_output_dir, params, force):
+    output_dir = f'{base_output_dir}/voice-segments'
     all_wav_files = {file for file in os.listdir(output_dir) if file.endswith('.wav')} if os.path.exists(output_dir) else set()
     removed_wav_files = all_wav_files
     if not os.path.exists(summary_json):
@@ -148,8 +150,8 @@ def recompute_required(summary_json, output_dir, params, force):
         else:
             for segment in summary['segments']:
                 file = segment['file']
-                if os.path.exists(f'{output_dir}/{file}'):
-                    referenced_wav_files.add(file)
+                if os.path.exists(f'{base_output_dir}/{file}'):
+                    referenced_wav_files.add(os.path.basename(file))
                 else:
                     # one file missing => must recompute voice segments
                     force = True
