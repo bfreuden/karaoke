@@ -11,7 +11,13 @@ sample_projects = {
         'genius_url': 'https://genius.com/Sexion-dassaut-ma-direction-lyrics',
         'language': 'fr',
         'model': 'large-v3',
-    }
+    },
+    'criminal': {
+        'youtube_url': 'https://www.youtube.com/watch?v=mR8_ldc9lag',
+        'genius_url': 'https://genius.com/Eminem-criminal-lyrics',
+        'language': 'en',
+        'model': 'large-v3',
+    },
 }
 
 from get_or_create_karaoke_project_data import get_project, get_project_dir
