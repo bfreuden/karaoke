@@ -1,8 +1,6 @@
 import os.path
 from pathlib import Path
 
-from src.sample_projects import get_sample_project_dir
-
 
 def convert_wav_to_mp3(audio_wav, force=False):
     audio_mp3 =  Path(audio_wav).with_suffix('.mp3')
