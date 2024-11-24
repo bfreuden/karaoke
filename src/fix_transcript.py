@@ -34,7 +34,7 @@ def generate_alignment_data_from_lyrics(lyrics_txt, language, force=False):
             word_data = None
             last_end = -1
             for token in doc:
-                if token.pos_ == 'PUNCT':
+                if token.pos_ == 'PUNCT' and word_data is not None:
                     # attach to current token
                     spaces = '' if last_end == token.idx else ' ' * (token.idx - last_end)
                     word_data['text'] = f"{word_data['text']}{spaces}{token.text}"
@@ -252,23 +252,23 @@ def set_linear_timings_on(start, end, words):
 
 def set_missing_timings_on_lyrics_segment(flat_alignment_data_lyrics, lyrics_segment_with_timings,
                                           previous_word_with_timings, words_without_timings, next_word_with_timings):
-    if previous_word_with_timings is None:
+    if previous_word_with_timings is None and next_word_with_timings is not None:
         # let's insert the words withing the timings of the next word
         start = next_word_with_timings['start']
         end = next_word_with_timings['end']
         set_linear_timings_on(start, end, [*words_without_timings, next_word_with_timings])
-        pass
-    elif next_word_with_timings is None:
+    elif next_word_with_timings is None and previous_word_with_timings is not None:
         # let's insert the words withing the timings of the previous word
         start = previous_word_with_timings['start']
         end = previous_word_with_timings['end']
         set_linear_timings_on(start, end, [previous_word_with_timings, *words_without_timings])
-    else:
+    elif next_word_with_timings is not None and previous_word_with_timings is not None:
         # let's insert the words withing the start of the previous word and the end of the next word
         start = previous_word_with_timings['start']
         end = next_word_with_timings['end']
         set_linear_timings_on(start, end, [previous_word_with_timings, *words_without_timings, next_word_with_timings])
-        pass
+    else:
+        print("warning, no timings")
 
 def set_diff_transcript_timings_on_lyrics(flat_alignment_data_lyrics, flat_alignment_data_transcript, lyrics_diff_count,
                                           lyrics_diff_line, transcript_diff_count, transcript_diff_line):
@@ -344,5 +344,8 @@ def diff_positions(diff_line_str, diff_count_str):
 
 if __name__ == '__main__':
     from sample_projects import get_sample_project_items
-    project_dir, language = get_sample_project_items('dancing_in_the_dark', 'project_dir', 'language')
+
+    project = 'dancing_in_the_dark'
+    # project = 'ma_direction'
+    project_dir, language = get_sample_project_items(project, 'project_dir', 'language')
     fix_transcript(f'{project_dir}/transcript.json', f'{project_dir}/lyrics.txt', language, force=True)
