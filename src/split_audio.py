@@ -125,7 +125,7 @@ def split_audio(input_filename, base_output_dir=None, silence_threshold=1e-6, mi
         last_i = i
         segments.append(trim_right_silence_and_write_file(dry_run, i, max_energy, output_dir, output_filename_prefix, sample_rate,
                                                           samples, silence_threshold, start, step_size, stop, window_size))
-    if last_stop is not None and last_stop < len(samples):
+    if last_stop is not None and last_stop < len(samples) and last_stop != -1:
         segments.append(trim_right_silence_and_write_file(dry_run, last_i + 1, max_energy, output_dir, output_filename_prefix, sample_rate,
                                                           samples, silence_threshold, last_stop, step_size, len(samples), window_size))
 
@@ -229,6 +229,6 @@ if __name__ == '__main__':
         from sample_projects import get_sample_project_dir
         project_name = 'dancing_in_the_dark'
         project_dir = get_sample_project_dir(project_name)
-        split_audio(f'{project_dir}/vocals.wav', silence_threshold=0.001, min_silence_length=0.45, force=False)
+        split_audio(f'{project_dir}/vocals.wav', silence_threshold=0.001, min_silence_length=0.45, force=True)
 
 
