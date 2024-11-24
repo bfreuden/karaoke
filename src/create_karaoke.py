@@ -12,7 +12,9 @@ from fix_segment_start_end_timings import fix_segment_start_end_timings
 if __name__ == '__main__':
 
     from sample_projects import sample_projects, get_sample_project_dir
-    project_name = 'dancing_in_the_dark'
+    # project_name = 'dancing_in_the_dark'
+    # project_name = 'ma_direction'
+    project_name = 'criminal'
     project_attributes = sample_projects[project_name]
     force = False
 
@@ -42,7 +44,7 @@ if __name__ == '__main__':
     transcript_json = transcript_speech_to_text(vocals_mp3, language=language, model=model, initial_prompt=None, force=force)
     print("-- Aligning transcription on official lyrics")
     fixed_transcript_json = fix_transcript(transcript_json, lyrics_txt, language, force=force)
-    print("-- Adjusting segment limits")
-    fixed_transcript_2_json = fix_segment_start_end_timings(transcript_json, vocals_wav, convolution_window=0.05, threshold=50, force=force)
+    #print("-- Adjusting segment limits")
+    # fixed_transcript_2_json = fix_segment_start_end_timings(transcript_json, vocals_wav, convolution_window=0.05, threshold=50, force=force)
     print("-- Generating subtitles")
-    convert_transcript_to_segments_ass(fixed_transcript_2_json)
+    convert_transcript_to_segments_ass(fixed_transcript_json)
