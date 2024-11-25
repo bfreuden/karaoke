@@ -62,11 +62,13 @@ def rising_edges(binary_signal):
         index += 1
 
 # main function
-def split_audio(input_filename, base_output_dir=None, silence_threshold=1e-6, min_silence_length=3., step_duration=None, dry_run=False, force=False):
+def split_audio(input_filename, target_filename=None, base_output_dir=None, silence_threshold=1e-6, min_silence_length=3., step_duration=None, dry_run=False, force=False):
     window_duration = min_silence_length
     if step_duration is None:
         step_duration = window_duration / 10.
     params = {
+        'input_filename': os.path.basename(input_filename),
+        'target_filename': os.path.basename(input_filename) if target_filename is None else os.path.basename(target_filename),
         'silence_threshold': silence_threshold,
         'min_silence_length': min_silence_length,
         'step_duration': step_duration,
@@ -87,7 +89,7 @@ def split_audio(input_filename, base_output_dir=None, silence_threshold=1e-6, mi
         'params': params,
         'segments': segments
     }
-    output_filename_prefix = os.path.splitext(os.path.basename(input_filename))[0]
+    output_filename_prefix = os.path.splitext(os.path.basename(input_filename if target_filename is None else target_filename))[0]
     print("Splitting {} where energy is below {}% for longer than {}s.".format(
         input_filename,
         silence_threshold * 100.,
@@ -96,7 +98,12 @@ def split_audio(input_filename, base_output_dir=None, silence_threshold=1e-6, mi
 
     # Read and split the file
 
-    sample_rate, samples =wavfile.read(filename=input_filename)
+    sample_rate, samples = wavfile.read(filename=input_filename)
+    target_samples = samples
+    if target_filename is not None:
+        target_sample_rate, target_samples = wavfile.read(filename=target_filename)
+        assert target_sample_rate == sample_rate
+        assert len(target_samples) == len(samples)
 
     max_amplitude = np.iinfo(samples.dtype).max
     max_energy = energy([max_amplitude])
@@ -124,10 +131,10 @@ def split_audio(input_filename, base_output_dir=None, silence_threshold=1e-6, mi
         last_stop = stop
         last_i = i
         segments.append(trim_right_silence_and_write_file(dry_run, i, max_energy, output_dir, output_filename_prefix, sample_rate,
-                                                          samples, silence_threshold, start, step_size, stop, window_size))
+                                                          samples, target_samples, silence_threshold, start, step_size, stop, window_size))
     if last_stop is not None and last_stop < len(samples) and last_stop != -1:
         segments.append(trim_right_silence_and_write_file(dry_run, last_i + 1, max_energy, output_dir, output_filename_prefix, sample_rate,
-                                                          samples, silence_threshold, last_stop, step_size, len(samples), window_size))
+                                                          samples, target_samples, silence_threshold, last_stop, step_size, len(samples), window_size))
 
     with open(summary_json, mode="w", encoding="utf-8") as file:
         json.dump(summary, file, indent=2, ensure_ascii=False)
@@ -161,7 +168,7 @@ def recompute_required(summary_json, base_output_dir, params, force):
     return force
 
 
-def trim_right_silence_and_write_file(dry_run, i, max_energy, output_dir, output_filename_prefix, sample_rate, samples,
+def trim_right_silence_and_write_file(dry_run, i, max_energy, output_dir, output_filename_prefix, sample_rate, samples, target_samples,
                                       silence_threshold, start, step_size, stop, window_size):
     sub_signal_rev_windows = rev_windows(
         signal=samples[start:stop],
@@ -186,7 +193,7 @@ def trim_right_silence_and_write_file(dry_run, i, max_energy, output_dir, output
         wavfile.write(
             filename=output_file_path,
             rate=sample_rate,
-            data=samples[start:stop]
+            data=target_samples[start:stop]
         )
     else:
         print("Not writing file {}".format(output_file_path))
@@ -227,8 +234,9 @@ if __name__ == '__main__':
         split_audio(input_filename, output_dir, silence_threshold, min_silence_length, step_duration, dry_run)
     else:
         from sample_projects import get_sample_project_dir
-        project_name = 'dancing_in_the_dark'
+        # project_name = 'dancing_in_the_dark'
+        project_name = 'ma_direction'
         project_dir = get_sample_project_dir(project_name)
-        split_audio(f'{project_dir}/vocals.wav', silence_threshold=0.001, min_silence_length=0.45, force=True)
+        split_audio(f'{project_dir}/vocals.wav', None, silence_threshold=0.001, min_silence_length=0.45, force=True)
 
 
