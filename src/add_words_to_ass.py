@@ -29,12 +29,16 @@ def convert_transcript_to_words_ass(subtitles_segments_ass, transcript_json, for
                     transcript_segment = transcript_segments[line_index]
                     start_from = 0
                     for word in transcript_segment['words']:
-                        start = word['start']
-                        end = word['end']
-                        word_duration_cents = round(100 * (end - start))
-                        ass.write('{\\k')
-                        ass.write(str(word_duration_cents))
-                        ass.write('}')
+                        # FIXME!!
+                        try:
+                            start = word['start']
+                            end = word['end']
+                            word_duration_cents = round(100 * (end - start))
+                            ass.write('{\\k')
+                            ass.write(str(word_duration_cents))
+                            ass.write('}')
+                        except:
+                            print(f"no timing on word: {word['text']}")
                         ass.write(word['text'])
                         ass.write(' ')
                     ass.write('\n')
@@ -59,6 +63,7 @@ def ass_time(seconds):
 if __name__ == '__main__':
     from sample_projects import get_sample_project_dir
     # project_name = 'dancing_in_the_dark'
-    project_name = 'ma_direction'
+    # project_name = 'ma_direction'
+    project_name = 'criminal'
     project_dir = get_sample_project_dir(project_name)
     convert_transcript_to_words_ass(f'{project_dir}/subtitles-segments.ass', f'{project_dir}/transcript-fixed.json', force=True)

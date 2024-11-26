@@ -23,11 +23,15 @@ def convert_transcript_to_segments_ass(transcript_json, force=False):
         # write lyrics
         for segment in transcript['segments']:
             text = segment['text']
-            start = segment['words'][0]['start']
-            start_str = ass_time(start)
-            end = segment['words'][-1]['end']
-            end_str = ass_time(end)
-            ass.write(f'Dialogue: 0,{start_str},{end_str},Sample KM [Up],,0,0,0,,{text}\n')
+            # FIXME!!
+            try:
+                start = segment['words'][0]['start']
+                start_str = ass_time(start)
+                end = segment['words'][-1]['end']
+                end_str = ass_time(end)
+                ass.write(f'Dialogue: 0,{start_str},{end_str},Sample KM [Up],,0,0,0,,{text}\n')
+            except:
+                print(f"no timing on segment: {text}")
     return output_file
 
 def ass_time(seconds):
@@ -40,6 +44,7 @@ def ass_time(seconds):
 if __name__ == '__main__':
     from sample_projects import get_sample_project_dir
     # project_name = 'dancing_in_the_dark'
-    project_name = 'ma_direction'
+    # project_name = 'ma_direction'
+    project_name = 'criminal'
     project_dir = get_sample_project_dir(project_name)
     convert_transcript_to_segments_ass(f'{project_dir}/transcript-fixed.json', force=True)
