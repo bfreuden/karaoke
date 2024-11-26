@@ -231,12 +231,13 @@ if __name__ == '__main__':
         silence_threshold = args.silence_threshold
         output_dir = args.output_dir
         dry_run = args.dry_run
-        split_audio(input_filename, output_dir, silence_threshold, min_silence_length, step_duration, dry_run)
+        split_audio(input_filename, None, output_dir, silence_threshold, min_silence_length, step_duration, dry_run)
     else:
         from sample_projects import get_sample_project_dir
         # project_name = 'dancing_in_the_dark'
-        project_name = 'ma_direction'
+        # project_name = 'ma_direction'
+        project_name = 'criminal'
         project_dir = get_sample_project_dir(project_name)
-        split_audio(f'{project_dir}/vocals.wav', None, silence_threshold=0.001, min_silence_length=0.45, force=True)
+        split_audio(f'{project_dir}/vocals.wav', f'{project_dir}/audio.wav', silence_threshold=0.001, min_silence_length=0.45, force=True)
 
 
