@@ -8,11 +8,11 @@ def download_lyrics(genius_url, output_dir, force=False):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     lyrics_html = f'{output_dir}/lyrics.html'
-    # if not os.path.exists(lyrics_html) or force:
-    #     r = requests.get(genius_url)
-    #     lyrics = r.text
-    #     with open(lyrics_html, mode="w", encoding="utf-8") as file:
-    #         file.write(lyrics)
+    if not os.path.exists(lyrics_html) or force:
+        r = requests.get(genius_url)
+        lyrics = r.text
+        with open(lyrics_html, mode="w", encoding="utf-8") as file:
+            file.write(lyrics)
     lyrics_txt = f'{output_dir}/lyrics.txt'
     if os.path.exists(lyrics_txt) and not force:
         return lyrics_txt
@@ -41,6 +41,7 @@ def download_lyrics(genius_url, output_dir, force=False):
 if __name__ == '__main__':
     from sample_projects import get_sample_project_items
     # project = 'dancing_in_the_dark'
-    project = 'ma_direction'
+    # project = 'ma_direction'
+    project = 'criminal'
     project_dir, genius_url = get_sample_project_items(project, 'project_dir', 'genius_url')
     download_lyrics(genius_url, project_dir, force=True)
