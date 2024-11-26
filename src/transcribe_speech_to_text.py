@@ -72,7 +72,8 @@ def transcribe_segments_speech_to_text(voice_segments_json, language=None, model
 if __name__ == '__main__':
     from sample_projects import get_sample_project_items
     # project_name = 'dancing_in_the_dark'
-    project_name = 'ma_direction'
+    # project_name = 'ma_direction'
+    project_name = 'criminal'
     project_dir, language, model = get_sample_project_items(project_name, 'project_dir', 'language', 'model')
 
     import time

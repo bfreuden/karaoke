@@ -16,5 +16,6 @@ def convert_mp3_to_wav(audio_mp3, sample_rate=None, sample_rate_from_wav=None, f
 
 if __name__ == '__main__':
     from sample_projects import get_sample_project_dir
-    project_dir = get_sample_project_dir('dancing_in_the_dark')
+    project_name = 'criminal'
+    project_dir = get_sample_project_dir(project_name)
     convert_mp3_to_wav(f'{project_dir}/audio.mp3', sample_rate_from_wav=f'{project_dir}/vocals.wav', force=True)

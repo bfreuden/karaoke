@@ -345,6 +345,7 @@ def diff_positions(diff_line_str, diff_count_str):
 if __name__ == '__main__':
     from sample_projects import get_sample_project_items
     # project = 'dancing_in_the_dark'
-    project = 'ma_direction'
+    # project = 'ma_direction'
+    project = 'criminal'
     project_dir, language = get_sample_project_items(project, 'project_dir', 'language')
     align_transcript_on_lyrics(f'{project_dir}/transcript.json', f'{project_dir}/lyrics.txt', language, force=True)
