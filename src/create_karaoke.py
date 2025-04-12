@@ -3,36 +3,40 @@ from download_lyrics import download_lyrics
 from download_youtube_video import download_youtube_video
 from extract_mp3_from_mp4 import extract_mp3_from_mp4
 from get_or_create_karaoke_project_data import get_or_create_project_from_attributes
-from split_vocals_and_accompaniment import split_vocals_and_accompaniment
+from split_vocals_and_accompaniment_docker import split_vocals_and_accompaniment
 from src.convert_mp3_to_wav import convert_mp3_to_wav
-from src.align_transcript_on_lyrics import align_transcript_on_lyrics
-from src.split_audio import split_audio
-from src.transcribe_speech_to_text import transcribe_segments_speech_to_text
-from convert_transcript_to_ass import convert_transcript_to_segments_ass
-from fix_segment_start_end_timings import fix_segment_start_end_timings
+from convert_wav_to_mono import convert_wav_to_mono
+from align_lyrics_with_audio_docker import align_lyrics_with_audio
+# from src.align_transcript_on_lyrics import align_transcript_on_lyrics
+# from src.split_audio import split_audio
+# from src.transcribe_speech_to_text import transcribe_segments_speech_to_text
+# from convert_transcript_to_ass import convert_transcript_to_segments_ass
+# from fix_segment_start_end_timings import fix_segment_start_end_timings
 
 if __name__ == '__main__':
 
     from sample_projects import sample_projects, get_sample_project_dir
     # project_name = 'dancing_in_the_dark'
-    project_name = 'afi_17_crimes'
+    # project_name = 'afi_17_crimes'
+    project_name = 'afi_medicate'
     # project_name = 'criminal'
     project_attributes = sample_projects[project_name]
     force = False
 
     # default values
     default_voice_threshold = 0.001
-    default_model_name = 'large-v3'
+    default_model_name = 'stt_en_fastconformer_hybrid_large_pc'
     default_speech_to_text_target = 'audio'
     default_min_silence_length = 0.45
     default_initial_prompt = None
 
     print("-- Creating project data")
-    karaoke_project_data = get_or_create_project_from_attributes(project_attributes, force=force)
+    karaoke_project_data = get_or_create_project_from_attributes(project_attributes, force=True)
 
     youtube_url = karaoke_project_data['youtube_url']
     genius_url = karaoke_project_data['genius_url']
     slug = karaoke_project_data['slug']
+    model = karaoke_project_data['model']
     language = karaoke_project_data['language']
     model_name = karaoke_project_data['model'] if 'model' in karaoke_project_data else default_model_name
     speech_to_text_target = karaoke_project_data['speech_to_text_target'] if 'speech_to_text_target' in karaoke_project_data else default_speech_to_text_target
@@ -54,6 +58,15 @@ if __name__ == '__main__':
     vocals_mp3 = convert_wav_to_mp3(vocals_wav, force=force)
     print("-- Converting accompaniment track to mp3")
     accompaniment_mp3 = convert_wav_to_mp3(accompaniment_wav, force=force)
+    print("-- Aligning lyrics with audio")
+    accompaniment_mp3 = convert_wav_to_mp3(accompaniment_wav, force=force)
+    print("-- Converting audio to mono")
+    audio_mono_wav = convert_wav_to_mono(audio_wav, force=force)
+    print("-- Converting audio to mono")
+    audio_mono_wav = convert_wav_to_mono(audio_wav, force=force)
+    print("-- Aligning lyrics with audio")
+    words_ctm = align_lyrics_with_audio(audio_mono_wav, lyrics_txt, model, force=force)
+
     # print(f"-- Splitting {speech_to_text_target} track based on vocals silences")
     # target_filename = None if speech_to_text_target == 'vocals' else audio_wav
     # voice_segments_json = split_audio(vocals_wav, target_filename=target_filename, silence_threshold=silence_threshold, min_silence_length=min_silence_length, force=force)

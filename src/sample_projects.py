@@ -28,7 +28,7 @@ sample_projects = {
         'youtube_url': 'https://www.youtube.com/watch?v=wCwEBz3ego8',
         'genius_url': 'https://genius.com/Afi-medicate-lyrics',
         'language': 'en',
-        'model': 'large-v3',
+        'model': 'stt_en_fastconformer_hybrid_large_pc',
     },
     'poets_standstill': {
         'youtube_url': 'https://www.youtube.com/watch?v=FsKxXnAoSDo',

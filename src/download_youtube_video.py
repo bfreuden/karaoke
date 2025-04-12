@@ -1,61 +1,6 @@
 import os.path
 
-from pytube import YouTube
-
-from src.get_or_create_karaoke_project_data import get_project_dir
-from src.sample_projects import get_sample_project_dir
-
-pytube_patched = False
-
-def maybe_patch_pytube():
-    global pytube_patched
-    if pytube_patched:
-        return
-    pytube_patched = True
-    import ssl
-    from pytube.innertube import _default_clients
-    from pytube.exceptions import RegexMatchError
-
-    _default_clients["ANDROID"]["context"]["client"]["clientVersion"] = "19.08.35"
-    _default_clients["IOS"]["context"]["client"]["clientVersion"] = "19.08.35"
-    _default_clients["ANDROID_EMBED"]["context"]["client"]["clientVersion"] = "19.08.35"
-    _default_clients["IOS_EMBED"]["context"]["client"]["clientVersion"] = "19.08.35"
-    _default_clients["IOS_MUSIC"]["context"]["client"]["clientVersion"] = "6.41"
-    _default_clients["ANDROID_MUSIC"] = _default_clients["ANDROID"]
-
-    import pytube, re
-    def patched_get_throttling_function_name(js: str) -> str:
-        function_patterns = [
-            r'a\.[a-zA-Z]\s*&&\s*\([a-z]\s*=\s*a\.get\("n"\)\)\s*&&.*?\|\|\s*([a-z]+)',
-            r'\([a-z]\s*=\s*([a-zA-Z0-9$]+)(\[\d+\])?\([a-z]\)',
-            r'\([a-z]\s*=\s*([a-zA-Z0-9$]+)(\[\d+\])\([a-z]\)',
-        ]
-        for pattern in function_patterns:
-            regex = re.compile(pattern)
-            function_match = regex.search(js)
-            if function_match:
-                if len(function_match.groups()) == 1:
-                    return function_match.group(1)
-                idx = function_match.group(2)
-                if idx:
-                    idx = idx.strip("[]")
-                    array = re.search(
-                        r'var {nfunc}\s*=\s*(\[.+?\]);'.format(
-                            nfunc=re.escape(function_match.group(1))),
-                        js
-                    )
-                    if array:
-                        array = array.group(1).strip("[]").split(",")
-                        array = [x.strip() for x in array]
-                        return array[int(idx)]
-
-        raise RegexMatchError(
-            caller="get_throttling_function_name", pattern="multiple"
-        )
-
-    ssl._create_default_https_context = ssl._create_unverified_context
-    pytube.cipher.get_throttling_function_name = patched_get_throttling_function_name
-
+import yt_dlp
 
 def download_youtube_video(youtube_url, output_dir, force=False):
     if not os.path.exists(output_dir):
@@ -63,16 +8,12 @@ def download_youtube_video(youtube_url, output_dir, force=False):
     output_file = f'{output_dir}/video.mp4'
     if os.path.exists(output_file) and not force:
         return output_file
-    maybe_patch_pytube()
-    YouTube(youtube_url).streams \
-        .filter(progressive=True, file_extension='mp4') \
-        .order_by('resolution') \
-        .desc() \
-        .first() \
-        .download(output_path=os.path.dirname(output_file), filename=os.path.basename(output_file))
+    opts = { 'outtmpl': output_file, 'format': 'best'}
+    with yt_dlp.YoutubeDL(opts) as ydl:
+        ydl.download([youtube_url])
     return output_file
 
 if __name__ == '__main__':
     from sample_projects import get_sample_project_items
-    project_dir, youtube_url = get_sample_project_items('dancing_in_the_dark', 'project_dir', 'youtube_url')
+    project_dir, youtube_url = get_sample_project_items('afi_medicate', 'project_dir', 'youtube_url')
     download_youtube_video(youtube_url, project_dir, force=True)
