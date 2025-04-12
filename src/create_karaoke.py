@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     from sample_projects import sample_projects, get_sample_project_dir
     # project_name = 'dancing_in_the_dark'
-    project_name = 'ma_direction'
+    project_name = 'afi_17_crimes'
     # project_name = 'criminal'
     project_attributes = sample_projects[project_name]
     force = False
@@ -54,12 +54,12 @@ if __name__ == '__main__':
     vocals_mp3 = convert_wav_to_mp3(vocals_wav, force=force)
     print("-- Converting accompaniment track to mp3")
     accompaniment_mp3 = convert_wav_to_mp3(accompaniment_wav, force=force)
-    print(f"-- Splitting {speech_to_text_target} track based on vocals silences")
-    target_filename = None if speech_to_text_target == 'vocals' else audio_wav
-    voice_segments_json = split_audio(vocals_wav, target_filename=target_filename, silence_threshold=silence_threshold, min_silence_length=min_silence_length, force=force)
-    print(f"-- Running speech to text on {speech_to_text_target} track")
-    transcript_json = transcribe_segments_speech_to_text(voice_segments_json, language=language, model_name=model_name, initial_prompt=default_initial_prompt, force=force)
-    print("-- Aligning transcription on official lyrics")
-    aligned_transcript_json = align_transcript_on_lyrics(transcript_json, lyrics_txt, language, force=force)
-    print("-- Generating subtitles")
-    convert_transcript_to_segments_ass(aligned_transcript_json)
+    # print(f"-- Splitting {speech_to_text_target} track based on vocals silences")
+    # target_filename = None if speech_to_text_target == 'vocals' else audio_wav
+    # voice_segments_json = split_audio(vocals_wav, target_filename=target_filename, silence_threshold=silence_threshold, min_silence_length=min_silence_length, force=force)
+    # print(f"-- Running speech to text on {speech_to_text_target} track")
+    # transcript_json = transcribe_segments_speech_to_text(voice_segments_json, language=language, model_name=model_name, initial_prompt=default_initial_prompt, force=force)
+    # print("-- Aligning transcription on official lyrics")
+    # aligned_transcript_json = align_transcript_on_lyrics(transcript_json, lyrics_txt, language, force=force)
+    # print("-- Generating subtitles")
+    # convert_transcript_to_segments_ass(aligned_transcript_json)

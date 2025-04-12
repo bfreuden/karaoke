@@ -75,20 +75,44 @@ curl https://pyenv.run | bash
 ### Install Python 3.10
 
 ```
-pyenv install 3.10.11
+pyenv install 3.10.12
 ```
 
 ### Create a virtual env 
 
 ```
-cd karaoke
-pyenv local 3.10.11
-python -m venv env
+pyenv virtualenv 3.10.12 karaoke
 ```
 
 ### Activate the virtual env
+
 ```
-source env/bin/activate 
+pyenv shell karaoke
+```
+
+### Install pytorch
+
+#### GPU install 
+Warning: it really depends on:
+- your nvidia driver version
+- your GPU compute capability: https://developer.nvidia.com/cuda-gpus
+- cudnn support matrix: https://docs.nvidia.com/deeplearning/cudnn/backend/latest/reference/support-matrix.html
+
+For GTX 1050 Ti and nvidia driver version 535
+```
+pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cu121
+```
+
+#### CPU install
+
+``` 
+pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cpu
+```
+
+### Install NVIDIA NeMo
+
+```
+pip install nemo_toolkit['asr']==2.2.1
 ```
 
 ### Install requirements

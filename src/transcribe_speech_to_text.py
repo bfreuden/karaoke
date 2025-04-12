@@ -85,7 +85,9 @@ if __name__ == '__main__':
     #         initial_prompt = file.read()
     #     initial_prompt = f'The input will be a song which official lyrics are:\n\n{initial_prompt}'
     start = time.time()
-    # transcript_speech_to_text(f'{project_dir}/{track}.mp3', language=language, model=model, initial_prompt=initial_prompt, force=True)
-    transcribe_segments_speech_to_text(f'{project_dir}/voice-segments.json', language=language, model_name=model, initial_prompt=initial_prompt, force=True)
+    transcribe_speech_to_text(f'{project_dir}/{track}.mp3', language=language, model=model, initial_prompt=initial_prompt, force=True)
+    # transcribe_speech_to_text(f'{project_dir}/voice-segments/audio_041-slow.wav', language=language, model_name=model, initial_prompt=initial_prompt, force=True)
+    #transcribe_speech_to_text(f'/home/bruno/Téléchargements/Entretien Ivanovic.mp3', "en", "large-v3", force=True)
+    # transcribe_segments_speech_to_text(f'{project_dir}/voice-segments.json', language=language, model_name=model, initial_prompt=initial_prompt, force=True)
     end = time.time()
     print(f'Elapsed: {end - start}')

@@ -18,6 +18,30 @@ sample_projects = {
         'language': 'en',
         'model': 'large-v3',
     },
+    'afi_17_crimes': {
+        'youtube_url': 'https://www.youtube.com/watch?v=Y9Vh8XGgqjE',
+        'genius_url': 'https://genius.com/Afi-17-crimes-lyrics',
+        'language': 'en',
+        'model': 'large-v3',
+    },
+    'afi_medicate': {
+        'youtube_url': 'https://www.youtube.com/watch?v=wCwEBz3ego8',
+        'genius_url': 'https://genius.com/Afi-medicate-lyrics',
+        'language': 'en',
+        'model': 'large-v3',
+    },
+    'poets_standstill': {
+        'youtube_url': 'https://www.youtube.com/watch?v=FsKxXnAoSDo',
+        'genius_url': 'https://genius.com/Poets-of-the-fall-standstill-lyrics',
+        'language': 'en',
+        'model': 'large-v3',
+    },
+    'poets_dark_disquiet': {
+        'youtube_url': 'https://www.youtube.com/watch?v=aMT5Tuw0yZk',
+        'genius_url': 'https://genius.com/Poets-of-the-fall-my-dark-disquiet-lyrics',
+        'language': 'en',
+        'model': 'large-v3',
+    },
 }
 
 from get_or_create_karaoke_project_data import get_project, get_project_dir
