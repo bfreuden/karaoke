@@ -7,10 +7,12 @@ from split_vocals_and_accompaniment_docker import split_vocals_and_accompaniment
 from src.convert_mp3_to_wav import convert_mp3_to_wav
 from convert_wav_to_mono import convert_wav_to_mono
 from align_lyrics_with_audio_docker import align_lyrics_with_audio
+from convert_words_ctm_to_transcript import convert_words_ctm_to_transcript
+from convert_transcript_to_ass import convert_transcript_to_segments_ass
+
 # from src.align_transcript_on_lyrics import align_transcript_on_lyrics
 # from src.split_audio import split_audio
 # from src.transcribe_speech_to_text import transcribe_segments_speech_to_text
-# from convert_transcript_to_ass import convert_transcript_to_segments_ass
 # from fix_segment_start_end_timings import fix_segment_start_end_timings
 
 if __name__ == '__main__':
@@ -18,7 +20,7 @@ if __name__ == '__main__':
     from sample_projects import sample_projects, get_sample_project_dir
     # project_name = 'dancing_in_the_dark'
     # project_name = 'afi_17_crimes'
-    project_name = 'afi_medicate'
+    project_name = 'poets_standstill'
     # project_name = 'criminal'
     project_attributes = sample_projects[project_name]
     force = False
@@ -26,7 +28,7 @@ if __name__ == '__main__':
     # default values
     default_voice_threshold = 0.001
     default_model_name = 'stt_en_fastconformer_hybrid_large_pc'
-    default_speech_to_text_target = 'audio'
+    default_speech_to_text_target = 'vocals'
     default_min_silence_length = 0.45
     default_initial_prompt = None
 
@@ -46,26 +48,36 @@ if __name__ == '__main__':
 
     print("-- Downloading YouTube video")
     video_mp4 = download_youtube_video(youtube_url, project_dir, force=force)
+
     print("-- Downloading lyrics")
     lyrics_txt = download_lyrics(genius_url, project_dir, force=force)
+
     print("-- Extracting audio from video")
     audio_mp3 = extract_mp3_from_mp4(video_mp4, force=force)
+
     print("-- Splitting audio track in vocals and accompaniment")
     vocals_wav, accompaniment_wav = split_vocals_and_accompaniment(audio_mp3, force=force)
+
     print("-- Converting audio track to wav")
     audio_wav = convert_mp3_to_wav(audio_mp3, sample_rate_from_wav=vocals_wav, force=force)
+
     print("-- Converting vocals track to mp3")
     vocals_mp3 = convert_wav_to_mp3(vocals_wav, force=force)
+
     print("-- Converting accompaniment track to mp3")
     accompaniment_mp3 = convert_wav_to_mp3(accompaniment_wav, force=force)
-    print("-- Aligning lyrics with audio")
-    accompaniment_mp3 = convert_wav_to_mp3(accompaniment_wav, force=force)
-    print("-- Converting audio to mono")
-    audio_mono_wav = convert_wav_to_mono(audio_wav, force=force)
-    print("-- Converting audio to mono")
-    audio_mono_wav = convert_wav_to_mono(audio_wav, force=force)
-    print("-- Aligning lyrics with audio")
-    words_ctm = align_lyrics_with_audio(audio_mono_wav, lyrics_txt, model, force=force)
+
+    print(f"-- Converting {speech_to_text_target} to mono")
+    mono_wav = convert_wav_to_mono(audio_wav if speech_to_text_target == 'audio' else vocals_wav, force=force)
+
+    print(f"-- Aligning lyrics with {speech_to_text_target}")
+    words_ctm = align_lyrics_with_audio(mono_wav, lyrics_txt, model, force=force)
+
+    print(f"-- Converting alignment to transcript")
+    transcript_json = convert_words_ctm_to_transcript(lyrics_txt, words_ctm, force=force)
+
+    print(f"-- Converting transcript to segments ass")
+    segments_ass = convert_transcript_to_segments_ass(transcript_json, force=force)
 
     # print(f"-- Splitting {speech_to_text_target} track based on vocals silences")
     # target_filename = None if speech_to_text_target == 'vocals' else audio_wav

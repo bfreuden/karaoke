@@ -19,12 +19,13 @@ def get_or_create_project_from_attributes(project_attributes, force=False):
     genius_url = project_attributes['genius_url']
     language = project_attributes['language']
     model = project_attributes['model']
-    return get_or_create_project(youtube_url, genius_url, language, model, force)
+    speech_to_text_target = project_attributes['speech_to_text_target'] if 'speech_to_text_target' in project_attributes else None
+    return get_or_create_project(youtube_url, genius_url, language, model, speech_to_text_target, force)
 
 def get_project(youtube_url):
     return get_or_create_project(youtube_url, force=False, get_only=True)
 
-def get_or_create_project(youtube_url, genius_url=None, language=None, model='medium', force=False, get_only=False):
+def get_or_create_project(youtube_url, genius_url=None, language=None, model='medium', speech_to_text_target=None, force=False, get_only=False):
     from directories import output_dir
     projects_pickle = f'{output_dir}/projects.pickle'
     if not get_only and not os.path.exists(projects_pickle):
@@ -39,6 +40,8 @@ def get_or_create_project(youtube_url, genius_url=None, language=None, model='me
     title = get_youtube_video_title(youtube_url)
     slug = slugify(title)
     project_data = {'title': title, 'slug': slug, 'genius_url': genius_url, 'youtube_url': youtube_url, 'language': language, 'model': model}
+    if speech_to_text_target is not None:
+        project_data['speech_to_text_target'] = speech_to_text_target
     projects[youtube_url] = project_data
     with open(projects_pickle, 'wb') as file:
         pickle.dump(projects, file, protocol=pickle.HIGHEST_PROTOCOL)

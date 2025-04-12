@@ -45,6 +45,6 @@ if __name__ == '__main__':
     from sample_projects import get_sample_project_dir
     # project_name = 'dancing_in_the_dark'
     # project_name = 'ma_direction'
-    project_name = 'criminal'
+    project_name = 'afi_medicate'
     project_dir = get_sample_project_dir(project_name)
-    convert_transcript_to_segments_ass(f'{project_dir}/transcript-fixed.json', force=True)
+    convert_transcript_to_segments_ass(f'{project_dir}/transcript.json', force=True)

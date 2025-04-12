@@ -5,3 +5,4 @@
 /docker/nemo_forced_aligner/output/
 /docker/spleeter/input/
 /docker/spleeter/output/
+/src/attic/
