@@ -41,6 +41,7 @@ def download_lyrics(genius_url, output_dir, force=False):
                     if not "[" in line:
                         file.write(line)
                         file.write('\n')
+    return lyrics_txt
 
 if __name__ == '__main__':
     from sample_projects import get_sample_project_items

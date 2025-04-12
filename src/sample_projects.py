@@ -43,6 +43,12 @@ sample_projects = {
         'language': 'en',
         'model': 'stt_en_fastconformer_hybrid_large_pc',
     },
+    'faouzia_thick_thin': {
+        'youtube_url': 'https://www.youtube.com/watch?v=2Xn_PKpCSL0',
+        'genius_url': 'https://genius.com/Faouzia-thick-and-thin-lyrics',
+        'language': 'en',
+        'model': 'stt_en_fastconformer_hybrid_large_pc',
+    },
 }
 
 from get_or_create_karaoke_project_data import get_project, get_project_dir

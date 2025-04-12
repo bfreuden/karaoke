@@ -9,7 +9,8 @@ from convert_wav_to_mono import convert_wav_to_mono
 from align_lyrics_with_audio_docker import align_lyrics_with_audio
 from convert_words_ctm_to_transcript import convert_words_ctm_to_transcript
 from convert_transcript_to_ass import convert_transcript_to_segments_ass
-from add_words_to_ass import convert_transcript_to_words_ass
+from add_words_to_segments_ass import add_words_to_segments_ass
+from apply_karaoke_mode_to_words_ass import apply_karaoke_mode_to_words_ass
 # from src.align_transcript_on_lyrics import align_transcript_on_lyrics
 # from src.split_audio import split_audio
 # from src.transcribe_speech_to_text import transcribe_segments_speech_to_text
@@ -20,7 +21,7 @@ if __name__ == '__main__':
     from sample_projects import sample_projects, get_sample_project_dir
     # project_name = 'dancing_in_the_dark'
     # project_name = 'afi_17_crimes'
-    project_name = 'poets_standstill'
+    project_name = 'faouzia_thick_thin'
     # project_name = 'criminal'
     project_attributes = sample_projects[project_name]
     force = False
@@ -79,8 +80,11 @@ if __name__ == '__main__':
     print(f"-- Converting transcript to segments ass")
     segments_ass = convert_transcript_to_segments_ass(transcript_json, force=force)
 
-    print(f"-- Converting transcript to segments ass")
-    segments_ass = convert_transcript_to_words_ass(transcript_json, force=force)
+    print(f"-- Converting transcript to words ass")
+    words_ass = add_words_to_segments_ass(segments_ass, transcript_json, force=force)
+
+    print(f"-- Applying karaoke mode to words ass")
+    apply_karaoke_mode_to_words_ass(words_ass, force=force)
 
     # print(f"-- Splitting {speech_to_text_target} track based on vocals silences")
     # target_filename = None if speech_to_text_target == 'vocals' else audio_wav

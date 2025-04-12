@@ -25,6 +25,6 @@ def align_lyrics_with_audio(audio_mono_wav, lyrics_txt, model, force=False):
 
 if __name__ == '__main__':
     from sample_projects import get_sample_project_items
-    project_dir, model = get_sample_project_items('poets_standstill', 'project_dir', 'model')
+    project_dir, model = get_sample_project_items('faouzia_thick_thin', 'project_dir', 'model')
 
     tokens = align_lyrics_with_audio(f'{project_dir}/vocals-mono.wav', f'{project_dir}/lyrics.txt', model, force=True)

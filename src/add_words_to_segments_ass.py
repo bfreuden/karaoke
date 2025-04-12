@@ -4,10 +4,10 @@ import time
 import math
 
 
-def convert_transcript_to_words_ass(subtitles_segments_ass, transcript_json, force=False):
+def add_words_to_segments_ass(subtitles_segments_ass, transcript_json, force=False):
     output_file = f'{os.path.dirname(transcript_json)}/subtitles-words.ass'
     if os.path.exists(output_file) and not force:
-        return
+        return output_file
     with open(transcript_json, mode='r', encoding='utf-8') as file:
         transcript = json.load(file)
     transcript_segments = transcript['segments']
@@ -65,4 +65,4 @@ if __name__ == '__main__':
     # project_name = 'ma_direction'
     project_name = 'poets_standstill'
     project_dir = get_sample_project_dir(project_name)
-    convert_transcript_to_words_ass(f'{project_dir}/subtitles-segments.ass', f'{project_dir}/transcript.json', force=True)
+    add_words_to_segments_ass(f'{project_dir}/subtitles-segments.ass', f'{project_dir}/transcript.json', force=True)
