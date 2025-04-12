@@ -24,33 +24,32 @@ def convert_transcript_to_words_ass(subtitles_segments_ass, transcript_json, for
                     index = line.find('0,0,0,,')
                     index += 7
                     start_line = line[0:index]
-                    text = line[index:]
+                    #text = line[index:]
                     ass.write(start_line)
                     transcript_segment = transcript_segments[line_index]
-                    start_from = 0
-                    for word in transcript_segment['words']:
-                        # FIXME!!
-                        try:
-                            start = word['start']
-                            end = word['end']
-                            word_duration_cents = round(100 * (end - start))
-                            ass.write('{\\k')
-                            ass.write(str(word_duration_cents))
-                            ass.write('}')
-                        except:
-                            print(f"no timing on word: {word['text']}")
+                    nb_words = len(transcript_segment['words'])
+                    for i in range(0, nb_words - 1):
+                        word = transcript_segment['words'][i]
+                        start = word['start']
+                        end = transcript_segment['words'][i+1]['start']
+                        word_duration_cents = round(100 * (end - start))
+                        ass.write('{\\k')
+                        ass.write(str(word_duration_cents))
+                        ass.write('}')
                         ass.write(word['text'])
                         ass.write(' ')
+                    word = transcript_segment['words'][-1]
+                    start = word['start']
+                    end = word['end']
+                    word_duration_cents = round(100 * (end - start))
+                    ass.write('{\\k')
+                    ass.write(str(word_duration_cents))
+                    ass.write('}')
+                    ass.write(word['text'])
+
+
                     ass.write('\n')
                     line_index += 1
-        # # write lyrics
-        # for segment in transcript['segments']:
-        #     text = segment['text']
-        #     start = segment['words'][0]['start']
-        #     start_str = ass_time(start)
-        #     end = segment['words'][-1]['end']
-        #     end_str = ass_time(end)
-        #     ass.write(f'Dialogue: 0,{start_str},{end_str},Sample KM [Up],,0,0,0,,{text}\n')
     return output_file
 
 def ass_time(seconds):
@@ -64,6 +63,6 @@ if __name__ == '__main__':
     from sample_projects import get_sample_project_dir
     # project_name = 'dancing_in_the_dark'
     # project_name = 'ma_direction'
-    project_name = 'criminal'
+    project_name = 'poets_standstill'
     project_dir = get_sample_project_dir(project_name)
-    convert_transcript_to_words_ass(f'{project_dir}/subtitles-segments.ass', f'{project_dir}/transcript-fixed.json', force=True)
+    convert_transcript_to_words_ass(f'{project_dir}/subtitles-segments.ass', f'{project_dir}/transcript.json', force=True)
