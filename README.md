@@ -1,7 +1,81 @@
 
 # Python installation procedure
 
+## Linux
+
+### Install Docker
+
+See: https://docs.docker.com/engine/install/
+
+### Install Pyenv dependencies
+
+See: https://github.com/pyenv/pyenv/wiki#suggested-build-environment
+
+
+Ubuntu/Debian:
+```
+sudo apt update; sudo apt install build-essential libssl-dev zlib1g-dev \
+libbz2-dev libreadline-dev libsqlite3-dev curl git \
+libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev 
+```
+
+CentOS/Fedora 21 and below:
+``` 
+yum install gcc make patch zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel
+```
+
+Fedora 22 and above:
+``` 
+dnf install make gcc patch zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel libuuid-devel gdbm-libs libnsl2
+```
+
+### Install Pyenv
+
+https://github.com/pyenv/pyenv
+
+https://github.com/pyenv/pyenv?tab=readme-ov-file#unixmacos
+
+Open a terminal then run:
+```
+curl https://pyenv.run | bash 
+```
+
+### Install Python 3.10
+
+```
+pyenv install 3.10.12
+```
+
+### Create a virtual env 
+
+```
+pyenv virtualenv 3.10.12 karaoke
+```
+
+### Activate the virtual env
+
+```
+pyenv shell karaoke
+```
+
+### Install requirements
+```
+pip install -r requirements.txt
+```
+
+### Install additional Python requirements
+
+Download ffmpeg binaries:
+```
+sudo apt install ffmpeg
+```
+
+
+
+
 ## Windows
+
+TODO!!
 
 ### Install Pyenv
 
@@ -42,12 +116,6 @@ python -m venv env
 pip install -r requirements.txt
 ```
 
-### Install languages
-```
-python -m spacy download en_core_web_sm
-python -m spacy download fr_core_news_sm
-```
-
 
 ### Install additional Python requirements
 
@@ -56,83 +124,5 @@ https://www.gyan.dev/ffmpeg/builds/
 https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip
 
 And put the bin directory into the PATH.
-
-
-
-## Linux
-
-### Install Pyenv
-
-https://github.com/pyenv/pyenv
-
-https://github.com/pyenv/pyenv?tab=readme-ov-file#unixmacos
-
-Open a terminal then run:
-```
-curl https://pyenv.run | bash 
-```
-
-### Install Python 3.10
-
-```
-pyenv install 3.10.12
-```
-
-### Create a virtual env 
-
-```
-pyenv virtualenv 3.10.12 karaoke
-```
-
-### Activate the virtual env
-
-```
-pyenv shell karaoke
-```
-
-### Install pytorch
-
-#### GPU install 
-Warning: it really depends on:
-- your nvidia driver version
-- your GPU compute capability: https://developer.nvidia.com/cuda-gpus
-- cudnn support matrix: https://docs.nvidia.com/deeplearning/cudnn/backend/latest/reference/support-matrix.html
-
-For GTX 1050 Ti and nvidia driver version 535
-```
-pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cu121
-```
-
-#### CPU install
-
-``` 
-pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cpu
-```
-
-### Install NVIDIA NeMo
-
-```
-pip install nemo_toolkit['asr']==2.2.1
-```
-
-### Install requirements
-```
-pip install -r requirements.txt
-```
-
-### Install languages
-```
-python -m spacy download en_core_web_sm
-python -m spacy download fr_core_news_sm
-```
-
-
-### Install additional Python requirements
-
-Download ffmpeg binaries:
-```
-sudo apt install ffmpeg
-```
-
 
 
