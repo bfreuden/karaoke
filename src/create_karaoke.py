@@ -11,6 +11,9 @@ from convert_words_ctm_to_transcript import convert_words_ctm_to_transcript
 from convert_transcript_to_ass import convert_transcript_to_segments_ass
 from add_words_to_segments_ass import add_words_to_segments_ass
 from apply_karaoke_mode_to_words_ass import apply_karaoke_mode_to_words_ass
+from replace_audio_track_in_video import replace_audio_track_in_video
+from insert_subtitles_in_video import insert_subtitles_in_video
+
 # from src.align_transcript_on_lyrics import align_transcript_on_lyrics
 # from src.split_audio import split_audio
 # from src.transcribe_speech_to_text import transcribe_segments_speech_to_text
@@ -21,7 +24,8 @@ if __name__ == '__main__':
     from sample_projects import sample_projects, get_sample_project_dir
     # project_name = 'dancing_in_the_dark'
     # project_name = 'afi_17_crimes'
-    project_name = 'faouzia_thick_thin'
+    # project_name = 'faouzia_thick_thin'
+    project_name = 'poets_standstill'
     # project_name = 'criminal'
     project_attributes = sample_projects[project_name]
     force = False
@@ -78,13 +82,19 @@ if __name__ == '__main__':
     transcript_json = convert_words_ctm_to_transcript(lyrics_txt, words_ctm, force=force)
 
     print(f"-- Converting transcript to segments ass")
-    segments_ass = convert_transcript_to_segments_ass(transcript_json, force=force)
+    subtitles_segments_ass = convert_transcript_to_segments_ass(transcript_json, force=force)
 
     print(f"-- Converting transcript to words ass")
-    words_ass = add_words_to_segments_ass(segments_ass, transcript_json, force=force)
+    subtitles_words_ass = add_words_to_segments_ass(subtitles_segments_ass, transcript_json, force=force)
 
     print(f"-- Applying karaoke mode to words ass")
-    apply_karaoke_mode_to_words_ass(words_ass, force=force)
+    subtitles_karaoke_ass = apply_karaoke_mode_to_words_ass(subtitles_words_ass, force=force)
+
+    print(f"-- Replacing audio track in video")
+    video_accompaniment_mp4 = replace_audio_track_in_video(video_mp4, accompaniment_mp3, force=force)
+
+    print(f"-- Inserting subtitles in video")
+    video_karaoke_mp4 = insert_subtitles_in_video(video_accompaniment_mp4, subtitles_karaoke_ass, force=True)
 
     # print(f"-- Splitting {speech_to_text_target} track based on vocals silences")
     # target_filename = None if speech_to_text_target == 'vocals' else audio_wav
