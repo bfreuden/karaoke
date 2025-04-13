@@ -1,17 +1,12 @@
 import os
 
-from directories import output_dir
-pretrained_models = os.path.normpath(f'{output_dir}/pretrained_models')
-os.environ['MODEL_PATH'] = pretrained_models
+from install import spleeter_pretrained_models
+os.environ['MODEL_PATH'] = spleeter_pretrained_models
 
 from spleeter.audio.adapter import AudioAdapter
 from spleeter.separator import Separator
 from spleeter.audio import Codec
-from spleeter.model.provider.github import GithubModelProvider
-
-import requests
-import tarfile
-
+from install import add_ffmpeg_to_path
 
 def split_vocals_and_accompaniment(audio_mp3, force=False):
     project_dir = os.path.dirname(audio_mp3)
@@ -24,18 +19,9 @@ def split_vocals_and_accompaniment(audio_mp3, force=False):
         else:
             return (vocals_wav, accompaniment_wav)
 
-    pretrained_models_2stems = f'{pretrained_models}/2stems'
-    # spleeter fails when doing it by itself...
-    if not os.path.exists(pretrained_models_2stems):
-        os.makedirs(pretrained_models_2stems)
-        url = f"https://github.com/deezer/spleeter/releases/download/{GithubModelProvider.LATEST_RELEASE}/2stems.tar.gz"
-        response = requests.get(url, stream=True)
-        file = tarfile.open(fileobj=response.raw, mode="r|gz")
-        file.extractall(path=pretrained_models_2stems)
-
+    add_ffmpeg_to_path()
     audio_adapter: AudioAdapter = AudioAdapter.get("spleeter.audio.ffmpeg.FFMPEGProcessAudioAdapter")
     separator: Separator = Separator("spleeter:2stems", MWF=False)
-
     separator.separate_to_file(
         audio_mp3,
         project_dir,

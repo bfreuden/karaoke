@@ -8,7 +8,7 @@ import math
 def apply_karaoke_mode_to_words_ass(words_ass, force=False):
     output_file = f'{os.path.dirname(words_ass)}/subtitles-words-karaoke.ass'
     if os.path.exists(output_file) and not force:
-        return
+        return output_file
     with open(output_file, mode='w', encoding='utf-8') as ass:
         dialogue_lines = []
         with open(words_ass, mode='r', encoding='utf-8') as file:

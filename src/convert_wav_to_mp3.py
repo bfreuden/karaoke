@@ -1,6 +1,6 @@
 import os.path
 from pathlib import Path
-
+from install import ffmpeg
 
 def convert_wav_to_mp3(audio_wav, force=False):
     audio_mp3 =  Path(audio_wav).with_suffix('.mp3')
@@ -9,7 +9,7 @@ def convert_wav_to_mp3(audio_wav, force=False):
             os.remove(audio_mp3)
         else:
             return audio_mp3
-    os.system(f'ffmpeg -i {audio_wav} -vn -ar 44100 -ac 2 -b:a 192k {audio_mp3}')
+    os.system(f'{ffmpeg()} -i {audio_wav} -vn -ar 44100 -ac 2 -b:a 192k {audio_mp3}')
     return audio_mp3
 
 if __name__ == '__main__':

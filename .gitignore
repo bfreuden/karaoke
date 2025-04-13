@@ -6,3 +6,7 @@
 /docker/spleeter/input/
 /docker/spleeter/output/
 /src/attic/
+/karaoke/
+/NeMo/
+/spleeter/
+/ffmpeg/

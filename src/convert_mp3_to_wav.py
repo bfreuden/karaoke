@@ -1,6 +1,7 @@
 import os.path
 from pathlib import Path
 from scipy.io import wavfile
+from install import ffmpeg
 
 def convert_mp3_to_wav(audio_mp3, sample_rate=None, sample_rate_from_wav=None, force=False):
     if sample_rate is None:
@@ -11,7 +12,7 @@ def convert_mp3_to_wav(audio_mp3, sample_rate=None, sample_rate_from_wav=None, f
             os.remove(audio_wav)
         else:
             return audio_wav
-    os.system(f'ffmpeg -i {audio_mp3} -ar {sample_rate} {audio_wav}')
+    os.system(f'{ffmpeg()} -i {audio_mp3} -ar {sample_rate} {audio_wav}')
     return audio_wav
 
 if __name__ == '__main__':

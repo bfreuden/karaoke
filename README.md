@@ -75,7 +75,17 @@ sudo apt install ffmpeg
 
 ## Windows
 
-TODO!!
+### Install Visual Studio C++ Build Tools
+
+https://visualstudio.microsoft.com/fr/visual-cpp-build-tools/
+
+```
+vs_buildtools__370953915.1537938681.exe --quiet --add Microsoft.VisualStudio.Workload.VCTools
+```
+
+```
+$env:Path = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.16.27023\bin\HostX64\x64;" + $env:Path
+```
 
 ### Install Pyenv
 
@@ -103,12 +113,12 @@ pyenv install 3.10.11
 ```
 cd karaoke
 pyenv local 3.10.11
-python -m venv env
+python -m venv karaoke
 ```
 
 ### Activate the virtual env
 ```
- .\env\Scripts\Activate.ps1
+ .\karaoke\Scripts\Activate.ps1
 ```
 
 ### Install requirements
@@ -126,3 +136,22 @@ https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip
 And put the bin directory into the PATH.
 
 
+```
+ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+jiwer 3.1.0 requires click>=8.1.8, but you have click 7.1.2 which is incompatible.
+nemo-toolkit 2.2.1 requires protobuf==3.20.3, but you have protobuf 3.19.6 which is incompatible.
+onnx 1.17.0 requires protobuf>=3.20.2, but you have protobuf 3.19.6 which is incompatible.
+pyannote-database 5.1.3 requires typer>=0.12.1, but you have typer 0.3.2 which is incompatible.
+
+```
+
+``` 
+    rank_termination_signal: signal.Signals = signal.SIGKILL
+        SIGKILL => SIGILL
+    karaoke\karaoke\Lib\site-packages\nemo\utils\exp_manager.py
+```
+
+````
+https://dev.to/methane/python-use-utf-8-mode-on-windows-212i
+align with PYTHONUTF8=1 
+````

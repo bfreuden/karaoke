@@ -1,6 +1,6 @@
 import os.path
 from pathlib import Path
-
+from install import ffmpeg
 
 def convert_wav_to_mono(audio_wav, force=False):
     project_dir = os.path.abspath(os.path.dirname(audio_wav))
@@ -10,7 +10,7 @@ def convert_wav_to_mono(audio_wav, force=False):
             os.remove(audio_mono_wav)
         else:
             return audio_mono_wav
-    os.system(f'ffmpeg -i {audio_wav} -ac 1 {audio_mono_wav}')
+    os.system(f'{ffmpeg()} -i {audio_wav} -ac 1 {audio_mono_wav}')
     return audio_mono_wav
 
 if __name__ == '__main__':
