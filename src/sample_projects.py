@@ -55,6 +55,12 @@ sample_projects = {
         'language': 'en',
         'model': 'stt_en_fastconformer_hybrid_large_pc',
     },
+    'nanana': {
+        'youtube_url': 'https://www.youtube.com/watch?v=5bqinpLmoxk',
+        'genius_url': 'https://genius.com/Naheulband-nanana-de-lelfe-lyrics',
+        'language': 'fr',
+        'model': 'nvidia/stt_fr_fastconformer_hybrid_large_pc',
+    },
 }
 
 from get_or_create_karaoke_project_data import get_project, get_project_dir
