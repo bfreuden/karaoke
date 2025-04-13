@@ -25,7 +25,8 @@ if __name__ == '__main__':
     # project_name = 'dancing_in_the_dark'
     # project_name = 'afi_17_crimes'
     # project_name = 'faouzia_thick_thin'
-    project_name = 'poets_standstill'
+    # project_name = 'poets_standstill'
+    project_name = 'sting_shape_heart'
     # project_name = 'criminal'
     project_attributes = sample_projects[project_name]
     force = False

@@ -49,6 +49,12 @@ sample_projects = {
         'language': 'en',
         'model': 'stt_en_fastconformer_hybrid_large_pc',
     },
+    'sting_shape_heart': {
+        'youtube_url': 'https://www.youtube.com/watch?v=NlwIDxCjL-8',
+        'genius_url': 'https://genius.com/Sting-shape-of-my-heart-lyrics',
+        'language': 'en',
+        'model': 'stt_en_fastconformer_hybrid_large_pc',
+    },
 }
 
 from get_or_create_karaoke_project_data import get_project, get_project_dir
