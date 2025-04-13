@@ -25,10 +25,13 @@ def download_lyrics(genius_url, output_dir, force=False):
         # lyrics = lyrics.replace('</div>', '')
         lyrics = re.sub('<a[^>]*>', '', lyrics)
         lyrics = lyrics.replace('</a>', '')
+        lyrics = re.sub('<!--[^<]+-->', '', lyrics)
         lyrics = re.sub('<h\\d[^<]+</h\\d>', '', lyrics)
         lyrics = re.sub('<path[^<]+</path>', '', lyrics)
         lyrics = re.sub('<svg[^<]+</svg>', '', lyrics)
         lyrics = re.sub('<button[^<]+</button>', '', lyrics)
+        lyrics = re.sub('<div class="LyricsHeader[^<]+</div>', '', lyrics)
+        lyrics = re.sub('<div class="SongBioPreview[^<]+</div>', '', lyrics) #
         with open(f'{output_dir}/lyrics-clean.html', mode="w", encoding="utf-8") as html:
             html.write(lyrics)
         soup = BeautifulSoup(lyrics, "html.parser")
@@ -47,6 +50,6 @@ if __name__ == '__main__':
     from sample_projects import get_sample_project_items
     # project = 'dancing_in_the_dark'
     # project = 'ma_direction'
-    project = 'afi_medicate'
+    project = 'sting_shape_heart'
     project_dir, genius_url = get_sample_project_items(project, 'project_dir', 'genius_url')
-    download_lyrics(genius_url, project_dir, force=True)
+    download_lyrics(genius_url, project_dir, force=False)
