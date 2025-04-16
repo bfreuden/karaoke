@@ -29,7 +29,6 @@ sample_projects = {
         'genius_url': 'https://genius.com/Afi-medicate-lyrics',
         'language': 'en',
         'model': 'stt_en_fastconformer_hybrid_large_pc',
-        'speech_to_text_target': 'vocals'
     },
     'poets_standstill': {
         'youtube_url': 'https://www.youtube.com/watch?v=FsKxXnAoSDo',
@@ -60,6 +59,12 @@ sample_projects = {
         'genius_url': 'https://genius.com/Naheulband-nanana-de-lelfe-lyrics',
         'language': 'fr',
         'model': 'nvidia/stt_fr_fastconformer_hybrid_large_pc',
+    },
+    'frieren_hareru': {
+        'youtube_url': 'https://www.youtube.com/watch?v=iqsnJJK8GA4',
+        'genius_url': '',
+        'language': 'jp',
+        'model': 'stt_en_fastconformer_hybrid_large_pc',
     },
 }
 
