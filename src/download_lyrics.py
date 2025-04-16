@@ -5,6 +5,9 @@ import requests
 from bs4 import BeautifulSoup
 
 def download_lyrics(genius_url, output_dir, force=False):
+    lyrics_txt = f'{output_dir}/lyrics.txt'
+    if os.path.exists(lyrics_txt) and not force:
+        return lyrics_txt
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     lyrics_html = f'{output_dir}/lyrics.html'
@@ -13,9 +16,6 @@ def download_lyrics(genius_url, output_dir, force=False):
         lyrics = r.text
         with open(lyrics_html, mode="w", encoding="utf-8") as file:
             file.write(lyrics)
-    lyrics_txt = f'{output_dir}/lyrics.txt'
-    if os.path.exists(lyrics_txt) and not force:
-        return lyrics_txt
     with open(lyrics_html, mode="r", encoding="utf-8") as file:
         lyrics = file.read()
         lyrics = lyrics.replace('\r', '').replace('\n', '')
