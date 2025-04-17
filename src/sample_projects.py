@@ -1,20 +1,68 @@
 
 sample_projects = {
-    'dancing_in_the_dark': {
-        'youtube_url': 'https://www.youtube.com/watch?v=huMElOuIMmk',
-        'genius_url': 'https://genius.com/Amy-macdonald-dancing-in-the-dark-lyrics',
+    'metallica_unforgiven_3': {
+        'youtube_url': 'https://www.youtube.com/watch?v=OMJREChN8nY',
+        'genius_url': 'https://genius.com/Metallica-the-unforgiven-iii-lyrics',
         'language': 'en',
         'model': 'stt_en_fastconformer_hybrid_large_pc',
     },
-    'ma_direction': {
-        'youtube_url': 'https://www.youtube.com/watch?v=Y7-vP7TnluY',
-        'genius_url': 'https://genius.com/Sexion-dassaut-ma-direction-lyrics',
+    'slash_far_away': {
+        'youtube_url': 'https://www.youtube.com/watch?v=S3hoIetxhZw',
+        'genius_url': 'https://genius.com/Slash-far-and-away-lyrics',
+        'language': 'en',
+        'model': 'stt_en_fastconformer_hybrid_large_pc',
+    },
+    'slash_ghost': {
+        'youtube_url': 'https://www.youtube.com/watch?v=ZaAZjlHa7Uc',
+        'genius_url': 'https://genius.com/Slash-ghost-lyrics',
+        'language': 'en',
+        'model': 'stt_en_fastconformer_hybrid_large_pc',
+    },
+    'slash_back_from_cali': {
+        'youtube_url': 'https://www.youtube.com/watch?v=eCGSNO9dqUk',
+        'genius_url': 'https://genius.com/Slash-back-from-cali-lyrics',
+        'language': 'en',
+        'model': 'stt_en_fastconformer_hybrid_large_pc',
+    },
+    'metallica_turn_page': {
+        'youtube_url': 'https://www.youtube.com/watch?v=5EAIJv_OM4w',
+        'genius_url': 'https://genius.com/Metallica-turn-the-page-lyrics',
+        'language': 'en',
+        'model': 'stt_en_fastconformer_hybrid_large_pc',
+    },
+    'manau_tribu_dana': {
+        'youtube_url': 'https://www.youtube.com/watch?v=80hMEKlLVgQ',
+        'genius_url': 'https://genius.com/Manau-tribu-de-dana-lyrics',
         'language': 'fr',
         'model': 'nvidia/stt_fr_fastconformer_hybrid_large_pc',
     },
-    'criminal': {
-        'youtube_url': 'https://www.youtube.com/watch?v=mR8_ldc9lag',
-        'genius_url': 'https://genius.com/Eminem-criminal-lyrics',
+    'jeff_buckley_hallelujah': {
+        'youtube_url': 'https://www.youtube.com/watch?v=WIF4_Sm-rgQ',
+        'genius_url': 'https://genius.com/Manau-tribu-de-dana-lyrics',
+        'language': 'en',
+        'model': 'stt_en_fastconformer_hybrid_large_pc',
+    },
+    'kula_hosannah': {
+        'youtube_url': 'https://www.youtube.com/watch?v=odZPnQ-t6Yk',
+        'genius_url': 'https://genius.com/Kula-shaker-great-hosannah-lyrics',
+        'language': 'en',
+        'model': 'stt_en_fastconformer_hybrid_large_pc',
+    },
+    'good_charlotte_riot_girl': {
+        'youtube_url': 'https://www.youtube.com/watch?v=cDtOyMr_kgk',
+        'genius_url': 'https://genius.com/Good-charlotte-riot-girl-lyrics',
+        'language': 'en',
+        'model': 'stt_en_fastconformer_hybrid_large_pc',
+    },
+    'daughtry_no_over': {
+        'youtube_url': 'https://www.youtube.com/watch?v=UQ92eyxnxmQ',
+        'genius_url': 'https://genius.com/Daughtry-its-not-over-lyrics',
+        'language': 'en',
+        'model': 'stt_en_fastconformer_hybrid_large_pc',
+    },
+    'daughtry_dam': {
+        'youtube_url': 'https://www.youtube.com/watch?v=3xqlEdPyo44',
+        'genius_url': 'https://genius.com/Daughtry-the-dam-lyrics',
         'language': 'en',
         'model': 'stt_en_fastconformer_hybrid_large_pc',
     },
@@ -39,6 +87,24 @@ sample_projects = {
     'poets_dark_disquiet': {
         'youtube_url': 'https://www.youtube.com/watch?v=aMT5Tuw0yZk',
         'genius_url': 'https://genius.com/Poets-of-the-fall-my-dark-disquiet-lyrics',
+        'language': 'en',
+        'model': 'stt_en_fastconformer_hybrid_large_pc',
+    },
+    'dancing_in_the_dark': {
+        'youtube_url': 'https://www.youtube.com/watch?v=huMElOuIMmk',
+        'genius_url': 'https://genius.com/Amy-macdonald-dancing-in-the-dark-lyrics',
+        'language': 'en',
+        'model': 'stt_en_fastconformer_hybrid_large_pc',
+    },
+    'ma_direction': {
+        'youtube_url': 'https://www.youtube.com/watch?v=Y7-vP7TnluY',
+        'genius_url': 'https://genius.com/Sexion-dassaut-ma-direction-lyrics',
+        'language': 'fr',
+        'model': 'nvidia/stt_fr_fastconformer_hybrid_large_pc',
+    },
+    'criminal': {
+        'youtube_url': 'https://www.youtube.com/watch?v=mR8_ldc9lag',
+        'genius_url': 'https://genius.com/Eminem-criminal-lyrics',
         'language': 'en',
         'model': 'stt_en_fastconformer_hybrid_large_pc',
     },
