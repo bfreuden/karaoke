@@ -1,8 +1,23 @@
 import os
 import re
+import traceback
 
 import requests
 from bs4 import BeautifulSoup
+
+def search_genius_url(artist, title):
+    params = {
+        'per_page': '5',
+        'q': f'{artist} {title}'
+    }
+    try:
+        r = requests.get("https://genius.com/api/search/multi", params=params)
+        r.raise_for_status()
+        response = r.json()
+        return f"https://genius.com{response['response']['sections'][0]['hits'][0]['result']['path']}"
+    except:
+        print(traceback.format_exc())
+        return None
 
 def download_lyrics(genius_url, output_dir, force=False):
     lyrics_txt = f'{output_dir}/lyrics.txt'
@@ -13,6 +28,7 @@ def download_lyrics(genius_url, output_dir, force=False):
     lyrics_html = f'{output_dir}/lyrics.html'
     if not os.path.exists(lyrics_html) or force:
         r = requests.get(genius_url)
+        r.raise_for_status()
         lyrics = r.text
         with open(lyrics_html, mode="w", encoding="utf-8") as file:
             file.write(lyrics)
@@ -52,4 +68,5 @@ if __name__ == '__main__':
     # project = 'ma_direction'
     project = 'sting_shape_heart'
     project_dir, genius_url = get_sample_project_items(project, 'project_dir', 'genius_url')
-    download_lyrics(genius_url, project_dir, force=False)
+    print(search_genius_url('Metallica', 'Turn the Page'))
+    # download_lyrics(genius_url, project_dir, force=False)

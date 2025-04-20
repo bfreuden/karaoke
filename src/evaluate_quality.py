@@ -51,6 +51,7 @@ def evaluate_quality(transcript_json, vocals_wav, force=False):
     print(line)
     line = ""
     second = 0.0
+    # https://mike42.me/blog/2018-06-make-better-cli-progress-bars-with-unicode-block-characters
     while second < end:
         in_transcript = is_in_transcript(transcript, second)
         in_voice_segment = is_in_voice_segment(voice_segments, second)

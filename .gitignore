@@ -6,3 +6,6 @@
 /docker/spleeter/input/
 /docker/spleeter/output/
 /src/attic/
+/data/
+/karaoke-app/node_modules/
+/karaoke-app/.idea/

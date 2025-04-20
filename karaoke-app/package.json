@@ -1,0 +1,7 @@
+{
+	"dependencies": {
+		"@meersagor/wavesurfer-vue": "^1.0.0",
+		"axios": "^1.8.4",
+		"wavesurfer.js": "^7.9.4"
+	}
+}

@@ -32,14 +32,25 @@ if __name__ == '__main__':
     # project_name = [ 'dancing_in_the_dark' ]
     # project_name = [ 'afi_17_crimes' ]
     # project_name = [ 'afi_medicate' ]
-    # project_names = [ 'frieren_hareru' ]
+    project_names = [ 'frieren_hareru' ]
     # project_name = [ 'faouzia_thick_thin' ]
     # project_name = [ 'poets_standstill' ]
     # project_name = [ 'sting_shape_heart' ]
     # project_name = [ 'nanana' ]
     # project_name = [ 'ma_direction' ]
     # project_name = [ 'criminal' ]
-    project_names = sample_projects.keys()
+    # project_names = sample_projects.keys()
+
+    # https://pypi.org/project/eng-syl/
+    # https://github.com/Kozea/Pyphen
+    # https://spacy.io/universe/project/spacy_syllables
+
+    # >>> import pyphen
+    # >>> dic = pyphen.Pyphen(lang='fr_FR')
+    # >>> lyrics = open('output/sexion-dassaut-ma-direction-clip-officiel/lyrics.txt', mode='r').read()
+    # >>> for word in lyrics.replace('\n', ' ').split(' '):
+    # ...   print(dic.inserted(word))
+
 
     for project_name in project_names:
         try:
