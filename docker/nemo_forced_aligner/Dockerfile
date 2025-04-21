@@ -31,6 +31,17 @@ WORKDIR /opt/NeMo-2.2.1/tools/nemo_forced_aligner
 
 RUN python3 align.py manifest_filepath=/tmp/manifest.json pretrained_name="stt_en_fastconformer_hybrid_large_pc"  output_dir=/tmp
 RUN python3 align.py manifest_filepath=/tmp/manifest.json pretrained_name="nvidia/stt_fr_fastconformer_hybrid_large_pc"  output_dir=/tmp
+RUN python3 align.py manifest_filepath=/tmp/manifest.json pretrained_name="nvidia/stt_es_fastconformer_hybrid_large_pc"  output_dir=/tmp
+RUN python3 align.py manifest_filepath=/tmp/manifest.json pretrained_name="nvidia/stt_it_fastconformer_hybrid_large_pc"  output_dir=/tmp
+# RUN python3 align.py manifest_filepath=/tmp/manifest.json pretrained_name="nvidia/stt_ru_fastconformer_hybrid_large_pc"  output_dir=/tmp
+# RUN python3 align.py manifest_filepath=/tmp/manifest.json pretrained_name="nvidia/stt_pl_fastconformer_hybrid_large_pc"  output_dir=/tmp
+# RUN python3 align.py manifest_filepath=/tmp/manifest.json pretrained_name="nvidia/stt_be_fastconformer_hybrid_large_pc"  output_dir=/tmp
+# RUN python3 align.py manifest_filepath=/tmp/manifest.json pretrained_name="nvidia/stt_nl_fastconformer_hybrid_large_pc"  output_dir=/tmp
+# RUN python3 align.py manifest_filepath=/tmp/manifest.json pretrained_name="nvidia/stt_pt_fastconformer_hybrid_large_pc"  output_dir=/tmp
+# RUN python3 align.py manifest_filepath=/tmp/manifest.json pretrained_name="nvidia/stt_ka_fastconformer_hybrid_large_pc"  output_dir=/tmp
+# RUN python3 align.py manifest_filepath=/tmp/manifest.json pretrained_name="nvidia/stt_hr_fastconformer_hybrid_large_pc"  output_dir=/tmp
+# RUN python3 align.py manifest_filepath=/tmp/manifest.json pretrained_name="nvidia/stt_hy_fastconformer_hybrid_large_pc"  output_dir=/tmp
+# RUN python3 align.py manifest_filepath=/tmp/manifest.json pretrained_name="nvidia/stt_uz_fastconformer_hybrid_large_pc"  output_dir=/tmp
 
 RUN mkdir /input && \
     mkdir /output && \

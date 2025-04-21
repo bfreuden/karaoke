@@ -1,14 +1,17 @@
-FROM python:3.8.20-slim-bullseye
+FROM ubuntu:22.04
 
 RUN apt update && \
     apt install -y \
       curl \
+      unzip \
+      python3.10 \
+      python3-pip \
       ffmpeg && \
     apt-get clean all -y
 
-RUN mkdir -p /opt/spleeter/pretrained_models
+RUN mkdir -p /opt/spleeter/pretrained_models/2stems
 
-WORKDIR /opt/spleeter/pretrained_models
+WORKDIR /opt/spleeter/pretrained_models/2stems
 
 RUN curl -L -o 2stems.tar.gz 'https://github.com/deezer/spleeter/releases/download/v1.4.0/2stems.tar.gz' && \
     gunzip 2stems.tar.gz && \
@@ -31,10 +34,5 @@ COPY ./docker-entrypoint.sh /usr/local/bin/
 COPY ./spleet.py /opt/spleeter/
 
 ENV MODEL_PATH=/opt/spleeter/pretrained_models
-
-RUN mkdir /opt/spleeter/pretrained_models/2stems && \
-    mv /opt/spleeter/pretrained_models/checkpoint /opt/spleeter/pretrained_models/2stems/ && \
-    mv /opt/spleeter/pretrained_models/model.* /opt/spleeter/pretrained_models/2stems/
-
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
