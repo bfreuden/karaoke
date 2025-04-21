@@ -42,6 +42,6 @@ def insert_silences_in_alignment(words_no_silence_ctm, split_summary_json, force
 if __name__ == '__main__':
     from sample_projects import get_sample_project_items
 
-    project = 'afi_medicate'
+    project = 'afi-medicate'
     project_dir, = get_sample_project_items(project, 'project_dir')
     insert_silences_in_alignment(f'{project_dir}/ctm/words/vocals-no-silence-mono.ctm', f'{project_dir}/split-summary.json', force=True)

@@ -61,8 +61,6 @@ def ass_time(seconds):
 
 if __name__ == '__main__':
     from sample_projects import get_sample_project_dir
-    # project_name = 'dancing_in_the_dark'
-    # project_name = 'ma_direction'
-    project_name = 'poets_standstill'
+    project_name = 'afi-medicate'
     project_dir = get_sample_project_dir(project_name)
     add_words_to_segments_ass(f'{project_dir}/subtitles-segments.ass', f'{project_dir}/transcript.json', force=True)

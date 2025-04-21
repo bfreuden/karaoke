@@ -127,7 +127,7 @@ class NewKaraoke(BaseModel):
     artist: str
     title: str
 
-from get_or_create_karaoke_project_data import slugify
+from get_or_create_karaoke_project_data import slugify_karaoke
 import threading
 
 karaokes_lock = threading.Lock()
@@ -144,7 +144,7 @@ async def create_karaoke(new_karaoke: NewKaraoke, session_data: SessionData = De
     with karaokes_lock:
         with open(karaokes_json, mode='r') as fp:
             karaokes = json.load(fp)
-        slug = slugify(f'{new_karaoke.artist} {new_karaoke.title}')
+        slug = slugify_karaoke(new_karaoke.artist, new_karaoke.title)
         if slug in karaokes:
             raise HTTPException(400, "already exists")
 

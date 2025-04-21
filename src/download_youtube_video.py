@@ -15,5 +15,5 @@ def download_youtube_video(youtube_url, output_dir, force=False):
 
 if __name__ == '__main__':
     from sample_projects import get_sample_project_items
-    project_dir, youtube_url = get_sample_project_items('afi_medicate', 'project_dir', 'youtube_url')
+    project_dir, youtube_url = get_sample_project_items('frieren-hareru', 'project_dir', 'youtube_url')
     download_youtube_video(youtube_url, project_dir, force=True)

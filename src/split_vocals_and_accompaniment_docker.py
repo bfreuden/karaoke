@@ -20,6 +20,6 @@ def split_vocals_and_accompaniment(audio_mp3, force=False):
 
 
 if __name__ == '__main__':
-    from sample_projects import get_sample_project_items
-    project_dir, = get_sample_project_items('afi_medicate', 'project_dir')
+    from sample_projects import get_sample_project_dir
+    project_dir = get_sample_project_dir('afi-medicate')
     vocals_wav, accompaniment_wav = split_vocals_and_accompaniment(f'{project_dir}/audio.mp3', force=True)

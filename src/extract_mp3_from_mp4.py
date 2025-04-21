@@ -17,5 +17,5 @@ def extract_mp3_from_mp4(mp4, filename="audio.mp3", force=False):
 
 if __name__ == '__main__':
     from sample_projects import get_sample_project_dir
-    project_dir = get_sample_project_dir('dancing_in_the_dark')
+    project_dir = get_sample_project_dir('afi-medicate')
     extract_mp3_from_mp4(f'{project_dir}/video.mp4', force=True)

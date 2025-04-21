@@ -260,7 +260,7 @@ def trim_right_silence_and_write_file(split_file, i, max_energy, output_dir, out
 
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
+    if False and len(sys.argv) > 1:
         parser = argparse.ArgumentParser(description='Split a WAV file at silence.')
         parser.add_argument('input_file', type=str, help='The WAV file to split.')
         parser.add_argument('--output-dir', '-o', type=str, default=None,
@@ -287,9 +287,7 @@ if __name__ == '__main__':
         split_audio(input_filename, None, output_dir, silence_threshold, min_silence_length, step_duration, dry_run)
     else:
         from sample_projects import get_sample_project_dir
-        # project_name = 'dancing_in_the_dark'
-        # project_name = 'ma_direction'
-        project_name = 'afi_medicate'
+        project_name = 'afi-medicate'
         project_dir = get_sample_project_dir(project_name)
         split_audio(f'{project_dir}/vocals.wav', f'{project_dir}/audio.wav', silence_threshold=0.001, remove_silences=True, min_silence_length=0.5, split_file=True, force=True)
 

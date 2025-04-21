@@ -1,51 +1,37 @@
+import json
 import os
-import pickle
-import unicodedata
 import re
-import requests
-from bs4 import BeautifulSoup
+import unicodedata
 
-def get_project_dir(youtube_url, force=False):
-    from directories import output_dir
-    karaoke_project_data = get_or_create_project(youtube_url, force)
-    return f'{output_dir}/{karaoke_project_data["slug"]}'
 
-def get_project_dir_from_data(karaoke_project_data):
-    from directories import output_dir
-    return f'{output_dir}/{karaoke_project_data["slug"]}'
+def get_project_dir_from_data(project_data):
+    from directories import data_dir
+    slug = slugify_karaoke(project_data["artist"], project_data["title"])
+    return f'{data_dir}/{slug}'
 
-def get_or_create_project_from_attributes(project_attributes, force=False):
-    youtube_url = project_attributes['youtube_url']
-    genius_url = project_attributes['genius_url']
-    language = project_attributes['language']
-    model = project_attributes['model']
-    speech_to_text_target = project_attributes['speech_to_text_target'] if 'speech_to_text_target' in project_attributes else None
-    return get_or_create_project(youtube_url, genius_url, language, model, speech_to_text_target, force)
-
-def get_project(youtube_url):
-    return get_or_create_project(youtube_url, force=False, get_only=True)
-
-def get_or_create_project(youtube_url, genius_url=None, language=None, model='medium', speech_to_text_target=None, force=False, get_only=False):
-    from directories import output_dir
-    projects_pickle = f'{output_dir}/projects.pickle'
-    if not get_only and not os.path.exists(projects_pickle):
-        projects = {}
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
+def get_or_create_project_from_data(project_data, force=False, get_only=False):
+    from directories import data_dir
+    slug = slugify_karaoke(project_data["artist"], project_data["title"])
+    project_dir = f"{data_dir}/{slug}"
+    if not os.path.exists(project_dir):
+        if get_only:
+            return None
+        os.makedirs(project_dir)
+    project_data_json = f'{project_dir}/_data.json'
+    if not os.path.exists(project_data_json):
+        if get_only:
+            return None
+        elif not force:
+            with open(project_data_json, mode='w') as fp:
+                json.dump(project_data, fp, indent=4)
     else:
-        with open(projects_pickle, 'rb') as file:
-            projects = pickle.load(file)
-    if youtube_url in projects and not force:
-        return projects[youtube_url]
-    title = get_youtube_video_title(youtube_url)
-    slug = slugify(title)
-    project_data = {'title': title, 'slug': slug, 'genius_url': genius_url, 'youtube_url': youtube_url, 'language': language, 'model': model}
-    if speech_to_text_target is not None:
-        project_data['speech_to_text_target'] = speech_to_text_target
-    projects[youtube_url] = project_data
-    with open(projects_pickle, 'wb') as file:
-        pickle.dump(projects, file, protocol=pickle.HIGHEST_PROTOCOL)
+        with open(project_data_json, mode='r') as fp:
+            project_data = json.load(fp)
     return project_data
+
+
+def slugify_karaoke(artist, title, allow_unicode=False):
+    return slugify(f'{artist} {title}', allow_unicode)
 
 def slugify(value, allow_unicode=False):
     """
@@ -63,23 +49,23 @@ def slugify(value, allow_unicode=False):
     value = re.sub(r'[^\w\s-]', '', value.lower())
     return re.sub(r'[-\s]+', '-', value).strip('-_')
 
-
-def get_youtube_video_title(youtube_url):
-    r = requests.get(youtube_url)
-    soup = BeautifulSoup(r.text)
-    link = soup.find_all(name="title")[0]
-    title = str(link)
-    title = title.replace("<title>", "")
-    title = title.replace("</title>", "")
-    title = title.replace(" - YouTube", "")
-    return title
-
+#
+# def get_youtube_video_title(youtube_url):
+#     r = requests.get(youtube_url)
+#     soup = BeautifulSoup(r.text)
+#     link = soup.find_all(name="title")[0]
+#     title = str(link)
+#     title = title.replace("<title>", "")
+#     title = title.replace("</title>", "")
+#     title = title.replace(" - YouTube", "")
+#     return title
+#
 
 if __name__ == '__main__':
     from sample_projects import sample_projects
     project_attributes = sample_projects['dancing_in_the_dark']
     # project_attributes = sample_projects['ma_direction']
-    project_data = get_or_create_project_from_attributes(project_attributes, force=True)
+    project_data = get_or_create_project_from_data(project_attributes, force=True)
     print(f'YouTube URL: {project_data["youtube_url"]}')
     print(f'Genius URL: {project_data["genius_url"]}')
     print(f'Title: {project_data["title"]}')

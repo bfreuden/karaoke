@@ -14,6 +14,6 @@ def convert_wav_to_mp3(audio_wav, force=False):
 
 if __name__ == '__main__':
     from sample_projects import get_sample_project_dir
-    project_dir = get_sample_project_dir('dancing_in_the_dark')
+    project_dir = get_sample_project_dir('afi-medicate')
     convert_wav_to_mp3(f'{project_dir}/vocals.wav', force=True)
     convert_wav_to_mp3(f'{project_dir}/accompaniment.wav', force=True)

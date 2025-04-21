@@ -64,9 +64,8 @@ def download_lyrics(genius_url, output_dir, force=False):
 
 if __name__ == '__main__':
     from sample_projects import get_sample_project_items
-    # project = 'dancing_in_the_dark'
-    # project = 'ma_direction'
-    project = 'sting_shape_heart'
+    project = 'afi-medicate'
     project_dir, genius_url = get_sample_project_items(project, 'project_dir', 'genius_url')
-    print(search_genius_url('Metallica', 'Turn the Page'))
+
+    # print(search_genius_url('Metallica', 'Turn the Page'))
     # download_lyrics(genius_url, project_dir, force=False)
