@@ -30,4 +30,11 @@ RUN mkdir /input && \
 COPY ./docker-entrypoint.sh /usr/local/bin/
 COPY ./spleet.py /opt/spleeter/
 
+ENV MODEL_PATH=/opt/spleeter/pretrained_models
+
+RUN mkdir /opt/spleeter/pretrained_models/2stems && \
+    mv /opt/spleeter/pretrained_models/checkpoint /opt/spleeter/pretrained_models/2stems/ && \
+    mv /opt/spleeter/pretrained_models/model.* /opt/spleeter/pretrained_models/2stems/
+
+
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
