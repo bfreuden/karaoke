@@ -28,6 +28,10 @@
         variant="solo-inverted"
         v-model="lyrics"
       ></v-textarea>
+      <v-select
+        v-model="language"
+        :items="languages"
+      ></v-select>
     </template>
 
     <template #actions>
@@ -37,6 +41,7 @@
         variant="flat"
         color="primary"
         @click="saveLyrics"
+        :disabled="!lyrics || !language"
       >
         C'est bien ça !
       </v-btn>
@@ -57,9 +62,13 @@ export default {
   data:() => ({
     geniusURL: null,
     lyrics: null,
+    language: null,
+    languages: [],
   }),
   async mounted() {
-    this.getGeniusLyrics = debounce(this.getGeniusLyricsInternal, 500)
+    await this.getSupportedLanguages()
+    this.guessLyricsLanguageDebounced = debounce(this.guessLyricsLanguage, 500)
+    this.getGeniusLyricsDebounced = debounce(this.getGeniusLyrics, 500)
     try {
       const response = await api.post("/search-genius-lyrics",{artist: this.artist, title: this.title})
       this.geniusURL = response.data.url
@@ -70,19 +79,42 @@ export default {
   watch: {
     geniusURL(value) {
       if (value)
-        this.getGeniusLyrics()
+        this.getGeniusLyricsDebounced()
+    },
+    lyrics(value) {
+      if (value)
+        this.guessLyricsLanguageDebounced()
     }
   },
   methods: {
-    async getGeniusLyricsInternal() {
+    async getSupportedLanguages() {
+      const response = await api.get(`/languages`)
+      const translations = {
+        "en": "Anglais",
+        "fr": "Français",
+        "ja": "Japonais (rōmaji)",
+      }
+      this.languages = response.data.map(it => ({value: it, title: translations[it]}) )
+    },
+    async guessLyricsLanguage() {
+      const response = await api.post(`/_guess_language`, this.lyrics, {
+          headers: {
+            'Content-Type': 'text/plain'
+          }
+        }
+      )
+      this.language = response.data.language
+    },
+    async getGeniusLyrics() {
       const response = await api.post("/get-genius-lyrics",{url: this.geniusURL})
       this.lyrics = response.data.lyrics;
     },
     async saveLyrics() {
-      const data = {genius_url: this.geniusURL, lyrics: this.lyrics}
+      const data = {genius_url: this.geniusURL, lyrics: this.lyrics, language: this.language}
       await api.patch(`/karaoke/${this.projectName}`, data)
       this.$emit("lyrics-selected");
     }
+
   }
 }
 </script>

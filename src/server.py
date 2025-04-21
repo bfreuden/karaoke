@@ -1,26 +1,36 @@
-import base64
 import json
 import os
-from typing import Union, Optional
+import traceback
+from typing import Optional
 from uuid import UUID
 from uuid import uuid4
 import tempfile
+from asyncio import Queue
 
-import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
 from fastapi import Depends
-from fastapi import FastAPI, Response, WebSocket
+from fastapi import FastAPI, Response, WebSocket, Body
+# from fastapi import  BackgroundTasks
 from fastapi import HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi_sessions.backends.implementations import InMemoryBackend
 from fastapi_sessions.frontends.implementations import SessionCookie, CookieParameters
 from fastapi_sessions.session_verifier import SessionVerifier
 from pydantic import BaseModel, Field
+from typing import List
 from json_file_session_backend import JsonFileMemoryBackend
 from download_lyrics import search_genius_url, download_lyrics
-
+from create_karaoke import STEPS, generate_karaoke
 import base64
 import re
+from directories import data_dir, media_dir, webapp_dir
+
+from progress_notifier import WebSocketProgressNotifier
+from guess_lyrics_language import supported_languages, guess_language
+
+
+generate_executor = ThreadPoolExecutor(max_workers=1)
 
 def decode_base64(string, altchars=b'+/'):
     """Decode base64, padding being optional.
@@ -37,7 +47,6 @@ def decode_base64(string, altchars=b'+/'):
     result = base64.b64decode(data, altchars)
     return result.decode('ascii')
 
-data_dir = os.environ["DATA_DIR"] if "DATA_DIR" in os.environ else f'{os.path.dirname(__file__)}/../data'
 
 class SessionData(BaseModel):
     project_name: Optional[str] = Field(None)
@@ -166,10 +175,25 @@ class KaraokePatch(BaseModel):
     youtube_url: Optional[str] = Field(None)
     genius_url: Optional[str] = Field(None)
     lyrics: Optional[str] = Field(None)
+    language: Optional[str] = Field(None)
 
+
+@api.get("/languages", response_model=List[str])
+async def get_languages():
+    return supported_languages
 
 class KaraokeData(KaraokePatch):
-    pass
+    audio_mp3: Optional[str] = Field(None)
+    audio_wav: Optional[str] = Field(None)
+    accompaniment_mp3: Optional[str] = Field(None)
+    accompaniment_wav: Optional[str] = Field(None)
+    vocals_mp3: Optional[str] = Field(None)
+    vocals_wav: Optional[str] = Field(None)
+    video_mp4: Optional[str] = Field(None)
+    video_accompaniment_mp4: Optional[str] = Field(None)
+    subtitles_segments_ass: Optional[str] = Field(None)
+    subtitles_words_ass: Optional[str] = Field(None)
+    subtitles_words_karaoke_ass: Optional[str] = Field(None)
 
 @api.get("/karaoke/{project_name}", response_model=KaraokeData)
 async def get_karaoke(project_name: str):
@@ -177,24 +201,38 @@ async def get_karaoke(project_name: str):
         project_dir = f'{data_dir}/{project_name}'
         data_json = f'{project_dir}/_data.json'
         with open(data_json, mode='r') as fp:
-            data = json.load(fp)
-        return data
+            project_data = json.load(fp)
+        for key, file in [("lyrics", "lyrics.txt")]:
+            if os.path.exists(f'{project_dir}/{file}'):
+                with open(f'{project_dir}/{file}', mode='r') as fp:
+                    project_data[key] = fp.read()
+        for key, file in [
+            *[(f"{name.replace('-', '_')}_mp3", f"{name}.mp3") for name in ["accompaniment", "audio", "vocals"] ],
+            *[(f"{name.replace('-', '_')}_wav", f"{name}.wav") for name in ["accompaniment", "audio", "vocals"] ],
+            *[(f"{name.replace('-', '_')}_mp4", f"{name}.mp4") for name in ["video", "video-accompaniment"] ],
+            *[(f"{name.replace('-', '_')}_ass", f"{name}.ass") for name in ["subtitles-segments", "subtitles-words", "subtitles-words-karaoke"] ],
+        ]:
+            if os.path.exists(f'{project_dir}/{file}'):
+                project_data[key] = f'/data/{project_name}/{file}'
+        return project_data
 
 @api.patch("/karaoke/{project_name}", response_model=KaraokeData)
 async def patch_karaoke(project_name: str, patch: KaraokePatch):
     with karaoke_lock(project_name):
-        print(patch.model_dump())
-        data = await read_karaoke_data(project_name)
+        project_data = await read_karaoke_data(project_name)
+        project_dir = f'{data_dir}/{project_name}'
         for key, value in patch.model_dump().items():
             if value is not None:
-                data[key] = value
-        print(data)
-        await write_karaoke_data(project_name, data)
-        return data
+                if key == "lyrics":
+                    with open(f'{project_dir}/{key}.txt', mode='w') as fp:
+                        fp.write(value)
+                else:
+                    project_data[key] = value
+        await write_karaoke_data(project_name, project_data)
+        return project_data
 
 
 
-# @app.websocket("/ws", dependencies=[Depends(cookie)])
 @app.websocket("/ws/{context}")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
@@ -203,13 +241,19 @@ async def websocket_endpoint(websocket: WebSocket):
     [ base64_real_session_id, *_ ] = str(session_id).split('.')
     real_session_id = decode_base64(base64_real_session_id)[1:-1]
     real_session_id = str(UUID(real_session_id))
-    websockets[f'{real_session_id}-{context}'] = websocket
-    print(f"websocket: session_id {real_session_id} and context {context} associated to websocket {websocket}")
+    queue = Queue()
+    websockets[f'{real_session_id}-{context}'] = (websocket, queue)
+    # websockets[f'{real_session_id}-{context}'] = websocket
+    print(f"websocket: session_id {real_session_id} and context {context} associated to websocket {websocket} and queue {queue}")
     while True:
-        await asyncio.sleep(10)
         try:
-            await websocket.send_json({'ping': True})
+            item = await queue.get()
+            if "close" in item:
+                break
+            # await websocket.send_json({'ping': True})
+            await websocket.send_json(item)
         except:
+            traceback.format_exc()
             pass
 
 class SearchLyrics(BaseModel):
@@ -237,15 +281,41 @@ async def search_genius_lyrics(genius_lyrics: GeniusURL):
             lyrics = fp.read()
         return GeniusLyrics(lyrics=lyrics)
 
+def hello():
+    print("------ hello")
+
+@api.post("/_guess_language", response_model=KaraokePatch)
+async def gen_karaoke(lyrics: str = Body(..., media_type='text/plain')):
+    try:
+        language = guess_language(lyrics)
+        return KaraokePatch(language=language)
+    except:
+        print(traceback.format_exc())
+        return KaraokePatch(language=None)
 
 @api.post("/karaoke/{project_name}/_generate", dependencies=[Depends(cookie)])
-async def generate_karaoke(project_name: str, session_id: UUID = Depends(cookie)):
-    print("str(session_id)")
+async def gen_karaoke(
+        project_name: str,
+        # background_tasks: BackgroundTasks,
+        session_id: UUID = Depends(cookie)
+):
+    project_dir = f'{data_dir}/{project_name}'
     real_session_id = str(session_id)
-    context = "create"
-    print(f"sending to websocket associated to {real_session_id} and context {context}")
-    websocket = websockets[f'{real_session_id}-{context}']
-    await websocket.send_json({"project_name": project_name})
+    context = "generate"
+    print(f"sending progress notifications to websocket associated to {real_session_id} and context {context}")
+    (websocket, queue) = websockets[f'{real_session_id}-{context}']
+    print(f"websocket: {websocket}")
+    print(f"queue: {queue}")
+    progress = WebSocketProgressNotifier(STEPS, websocket, queue)
+    # progress.notify("Hello")
+    await websocket.send_json({
+        'step': 10,
+        'steps': 20,
+        'message': "hello",
+    })
+    # background_tasks.add_task(hello)
+    # background_tasks.add_task(generate_karaoke, project_dir, progress, False)
+    generate_executor.submit(generate_karaoke, project_dir, progress, False)
 
 async def read_karaoke_data(project_name):
     project_dir = f'{data_dir}/{project_name}'
@@ -277,6 +347,8 @@ def karaoke_lock(project_name: str) -> threading.Lock:
 
 app.mount("/api", api)
 
-app.mount("/static", StaticFiles(directory="output"), name="static")
+app.mount("/data", StaticFiles(directory=data_dir), name="data")
+app.mount("/media", StaticFiles(directory=media_dir), name="media")
+app.mount("/", StaticFiles(directory=webapp_dir), name="webapp")
 
 

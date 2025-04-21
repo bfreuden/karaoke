@@ -30,7 +30,7 @@
         ></SelectVideo>
       </v-col>
       <v-col
-        v-if="projectName && projectData.youtube_url && !projectData.lyrics"
+        v-if="projectName && projectData.youtube_url && (!projectData.lyrics || !projectData.language)"
         cols="12"
       >
         <SelectLyrics
@@ -41,12 +41,21 @@
         ></SelectLyrics>
       </v-col>
       <v-col
-        v-if="projectName && projectData.lyrics && !projectData.video"
+        v-if="projectName && projectData.lyrics && projectData.language && !projectData.video_accompaniment_mp4"
         cols="12"
       >
-        <CreateKaraoke
+        <GenerateKaraoke
           :project-name="projectName"
-        ></CreateKaraoke>
+          @karaoke-generated="getKaraokeData"
+        ></GenerateKaraoke>
+      </v-col>
+      <v-col
+        v-if="projectName && projectData.video_accompaniment_mp4"
+        cols="12"
+      >
+        <KaraokeResult
+          :project-data="projectData"
+        ></KaraokeResult>
       </v-col>
 
     </v-row>
@@ -61,11 +70,13 @@ import WaveSurferExampleNative from "@/components/WaveSurferExampleNative.vue";
 import {api} from "@/api.js"
 import SelectVideo from "@/components/SelectVideo.vue";
 import SelectLyrics from "@/components/SelectLyrics.vue";
-import CreateKaraoke from "@/components/CreateKaraoke.vue";
+import GenerateKaraoke from "@/components/GenerateKaraoke.vue";
+import KaraokeResult from "@/components/KaraokeResult.vue";
 
 export default {
   components: {
-    CreateKaraoke,
+    KaraokeResult,
+    GenerateKaraoke,
     SelectLyrics, SelectVideo, WaveSurferExampleNative, WaveSurferExample, NewOrExistingKaraoke, NewKaraoke},
   data: () => ({
     initialized: false,

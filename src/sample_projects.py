@@ -66,7 +66,7 @@ sample_projects = {
     "frieren-hareru": {
         "youtube_url": "https://www.youtube.com/watch?v=iqsnJJK8GA4",
         "genius_url": "",
-        "language": "jp",
+        "language": "ja",
         "artist": "Frieren",
         "title": "Hareru"
     },
@@ -168,7 +168,7 @@ def get_or_create_sample_project(project_name, force=False):
 
 def get_sample_project_dir(project_name, force=False):
     project_data = get_or_create_sample_project(project_name, force=force)
-    return get_project_dir_from_data(project_data, force=force)
+    return get_project_dir_from_data(project_data)
 
 def get_sample_project_items(project_name, *args):
     project_data = get_or_create_project_from_data(sample_projects[project_name], get_only=True)
@@ -177,7 +177,7 @@ def get_sample_project_items(project_name, *args):
 
 def migrate_new_layout():
     import json
-    from src.get_or_create_karaoke_project_data import slugify_karaoke
+    from get_or_create_karaoke_project_data import slugify_karaoke
     from directories import output_dir, data_dir
     import shutil
     import os

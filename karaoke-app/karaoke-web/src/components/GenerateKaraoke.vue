@@ -19,7 +19,8 @@
     </template>
 
     <template #text>
-
+      <div>{{ message }}</div>
+      <v-progress-linear v-model="step" :max="steps"></v-progress-linear>
     </template>
     <template #actions>
       <v-spacer></v-spacer>
@@ -36,19 +37,32 @@ import {api} from "@/api.js"
 
 export default {
   props: ['projectName'],
+  data: () => ({
+    steps: 0,
+    step: 0,
+    message: "",
+  }),
   mounted() {
-    const socket = new WebSocket(`ws://${window.location.host}/ws/create`);
-
+    const socket = new WebSocket(`ws://${window.location.host}/ws/generate`);
+    const self = this
     socket.addEventListener("message", (event) => {
       console.log("Message from server ", event.data);
+      const notification = JSON.parse(event.data);
+      if (!notification.ping) {
+        self.step = notification.step
+        self.steps = notification.steps
+        self.message = notification.message
+        if (self.steps !== 0 && self.step === self.steps) {
+          console.log("closing websocket");
+          socket.close()
+          this.$emit("karaoke-generated")
+        }
+      }
     });
     socket.addEventListener("open", (event) => {
       console.log("websocket open");
       api.post(`/karaoke/${this.projectName}/_generate`)
     });
-    setTimeout(() => {
-      socket.close();
-    }, 5)
   },
 }
 </script>

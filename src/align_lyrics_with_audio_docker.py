@@ -19,7 +19,7 @@ def align_lyrics_with_audio(audio_mono_wav, lyrics_txt, language, force=False):
     manifest = {  "audio_filepath": f'/input/{os.path.basename(audio_mono_wav)}', "text": text.replace('\n', '|') }
     with open(f'{project_dir}/manifest.json', mode='w') as file:
         json.dump(manifest, file)
-    if language == 'en' or language == 'jp':
+    if language == 'en' or language == 'ja':
         model_name = 'stt_en_fastconformer_hybrid_large_pc'
     else:
         model_name = f'nvidia/stt_{language}_fastconformer_hybrid_large_pc'
