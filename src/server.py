@@ -349,6 +349,6 @@ app.mount("/api", api)
 
 app.mount("/data", StaticFiles(directory=data_dir), name="data")
 app.mount("/media", StaticFiles(directory=media_dir), name="media")
-app.mount("/", StaticFiles(directory=webapp_dir), name="webapp")
+app.mount("/", StaticFiles(directory=webapp_dir, html=True), name="webapp")
 
 
