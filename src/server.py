@@ -146,11 +146,11 @@ websockets = {}
 
 @api.post("/create-karaoke", dependencies=[Depends(cookie)], response_model=SessionData)
 async def create_karaoke(new_karaoke: NewKaraoke, session_data: SessionData = Depends(verifier), session_id: UUID = Depends(cookie)):
-    karaokes_json = f'{data_dir}/karaokes.json'
-    if not os.path.exists(karaokes_json):
-        with open(karaokes_json, mode='w') as fp:
-            fp.write('{}')
     with karaokes_lock:
+        karaokes_json = f'{data_dir}/karaokes.json'
+        if not os.path.exists(karaokes_json):
+            with open(karaokes_json, mode='w') as fp:
+                fp.write('{}')
         with open(karaokes_json, mode='r') as fp:
             karaokes = json.load(fp)
         slug = slugify_karaoke(new_karaoke.artist, new_karaoke.title)
@@ -168,6 +168,28 @@ async def create_karaoke(new_karaoke: NewKaraoke, session_data: SessionData = De
         return session_data
 
 
+@api.post("/open-karaoke", dependencies=[Depends(cookie)], response_model=SessionData)
+async def open_karaoke(project_name: str, session_data: SessionData = Depends(verifier), session_id: UUID = Depends(cookie)):
+    with karaokes_lock:
+        karaokes_json = f'{data_dir}/karaokes.json'
+        if not os.path.exists(karaokes_json):
+            with open(karaokes_json, mode='w') as fp:
+                fp.write('{}')
+        with open(karaokes_json, mode='r') as fp:
+            karaokes = json.load(fp)
+        if project_name not in karaokes:
+            raise HTTPException(400, "no such karaoke")
+
+        session_data.project_name = project_name
+        await backend.update(session_id, session_data)
+        return session_data
+
+
+
+class SimpleKaraoke(BaseModel):
+    project_name: str
+    artist: str
+    title: str
 
 class KaraokePatch(BaseModel):
     artist: Optional[str] = Field(None)
@@ -289,6 +311,16 @@ async def gen_karaoke(lyrics: str = Body(..., media_type='text/plain')):
     try:
         language = guess_language(lyrics)
         return KaraokePatch(language=language)
+    except:
+        print(traceback.format_exc())
+        return KaraokePatch(language=None)
+
+@api.get("/karaokes", response_model=List[SimpleKaraoke])
+async def gen_karaokes():
+    try:
+        with open(f'{data_dir}/karaokes.json', mode="r") as fp:
+            karaokes = json.load(fp)
+        return [ {'project_name': key, 'title': value['title'], 'artist': value['artist']} for key, value in karaokes.items() ]
     except:
         print(traceback.format_exc())
         return KaraokePatch(language=None)

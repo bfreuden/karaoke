@@ -7,17 +7,26 @@
         cols="12"
         style="width: 900px"
       >
-<!--        <WaveSurferExampleNative></WaveSurferExampleNative>-->
         <NewOrExistingKaraoke
           @new-karaoke="freshKaraokeAction = 'create'"
+          @open-karaoke="freshKaraokeAction = 'open'"
         ></NewOrExistingKaraoke>
+      </v-col>
+      <v-col
+        v-if="freshKaraoke && freshKaraokeAction === 'open'"
+        cols="12"
+        style="width: 900px"
+      >
+        <OpenKaraoke
+          @open-karaoke="karaokeSelected"
+        ></OpenKaraoke>
       </v-col>
       <v-col
         v-if="freshKaraoke && freshKaraokeAction === 'create'"
         cols="12"
       >
         <NewKaraoke
-          @karaoke-created="karaokeCreated"
+          @karaoke-created="karaokeSelected"
         ></NewKaraoke>
       </v-col>
       <v-col
@@ -65,6 +74,7 @@
 <script>
 import NewOrExistingKaraoke from "@/components/NewOrExistingKaraoke.vue";
 import NewKaraoke from "@/components/NewKaraoke.vue";
+import OpenKaraoke from "@/components/OpenKaraoke.vue";
 import WaveSurferExample from "@/components/WaveSurferExample.vue";
 import WaveSurferExampleNative from "@/components/WaveSurferExampleNative.vue";
 import {api} from "@/api.js"
@@ -77,6 +87,7 @@ export default {
   components: {
     KaraokeResult,
     GenerateKaraoke,
+    OpenKaraoke,
     SelectLyrics, SelectVideo, WaveSurferExampleNative, WaveSurferExample, NewOrExistingKaraoke, NewKaraoke},
   data: () => ({
     initialized: false,
@@ -104,7 +115,7 @@ export default {
     }
   },
   methods: {
-    async karaokeCreated(projectName) {
+    async karaokeSelected(projectName) {
       this.projectName = projectName
       await this.getKaraokeData()
     },

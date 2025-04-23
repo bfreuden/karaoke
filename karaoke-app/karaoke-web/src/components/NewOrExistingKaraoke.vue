@@ -29,7 +29,7 @@
       <v-btn variant="flat" color="primary" @click="$emit('new-karaoke')">
         Créer
       </v-btn>
-      <v-btn variant="flat" color="primary" @click="$emit('existing-karaoke')">
+      <v-btn variant="flat" color="primary" @click="$emit('open-karaoke')">
         Sélectionner
       </v-btn>
       <v-spacer></v-spacer>
