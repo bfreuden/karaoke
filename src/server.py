@@ -6,6 +6,7 @@ from uuid import UUID
 from uuid import uuid4
 import tempfile
 from asyncio import Queue
+from functools import partial
 
 from concurrent.futures import ThreadPoolExecutor
 
@@ -216,6 +217,12 @@ class KaraokeData(KaraokePatch):
     subtitles_segments_ass: Optional[str] = Field(None)
     subtitles_words_ass: Optional[str] = Field(None)
     subtitles_words_karaoke_ass: Optional[str] = Field(None)
+    karaoke_video_mp4: Optional[str] = Field(None)
+    karaoke_subtitles_ass: Optional[str] = Field(None)
+    lyrics_video_mp4: Optional[str] = Field(None)
+    lyrics_subtitles_ass: Optional[str] = Field(None)
+
+from create_media_links import karaoke_video_file, karaoke_subtitles_file, lyrics_video_file, lyrics_subtitles_file
 
 @api.get("/karaoke/{project_name}", response_model=KaraokeData)
 async def get_karaoke(project_name: str):
@@ -236,6 +243,14 @@ async def get_karaoke(project_name: str):
         ]:
             if os.path.exists(f'{project_dir}/{file}'):
                 project_data[key] = f'/data/{project_name}/{file}'
+
+        for key, file in [
+            *[(f"{name.replace('-', '_')}_mp4", f"{file_supplier(project_data)}") for name, file_supplier in [ ("karaoke-video", karaoke_video_file), ("lyrics-video", lyrics_video_file)] ],
+            *[(f"{name.replace('-', '_')}_ass", f"{file_supplier(project_data)}") for name, file_supplier in [ ("karaoke-subtitles", karaoke_subtitles_file), ("lyrics-subtitles", lyrics_subtitles_file)] ],
+        ]:
+            if os.path.exists(f'{media_dir}/{file}'):
+                print(f'{key}=/media/{file}')
+                project_data[key] = f'/media/{file}'
         return project_data
 
 @api.patch("/karaoke/{project_name}", response_model=KaraokeData)
@@ -380,7 +395,7 @@ def karaoke_lock(project_name: str) -> threading.Lock:
 app.mount("/api", api)
 
 app.mount("/data", StaticFiles(directory=data_dir), name="data")
-app.mount("/media", StaticFiles(directory=media_dir), name="media")
+app.mount("/media", StaticFiles(directory=media_dir, follow_symlink=True), name="media")
 app.mount("/", StaticFiles(directory=webapp_dir, html=True), name="webapp")
 
 

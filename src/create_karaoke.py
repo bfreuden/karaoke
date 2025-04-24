@@ -22,14 +22,14 @@ from replace_audio_track_in_video import replace_audio_track_in_video
 from insert_silences_in_alignment import insert_silences_in_alignment
 from progress_notifier import PrintProgressNotifier
 from split_audio import split_audio
-from directories import media_dir
+from create_media_links import create_media_links
 
 # from align_transcript_on_lyrics import align_transcript_on_lyrics
 # from split_audio import split_audio
 # from transcribe_speech_to_text import transcribe_segments_speech_to_text
 # from fix_segment_start_end_timings import fix_segment_start_end_timings
 
-STEPS = 17
+STEPS = 18
 
 def generate_karaoke(project_dir, progress=PrintProgressNotifier(STEPS), force=False):
     try:
@@ -104,18 +104,15 @@ def generate_karaoke(project_dir, progress=PrintProgressNotifier(STEPS), force=F
         progress.notify(f"Replacing audio track in video")
         video_accompaniment_mp4 = replace_audio_track_in_video(video_mp4, accompaniment_mp3, force=force)
 
+        progress.notify(f"Creating media links")
+        create_media_links(project_data, video_mp4, video_accompaniment_mp4, subtitles_karaoke_ass, force=force)
+
         # progress.notify(f"Inserting subtitles in video")
         # video_karaoke_mp4 = insert_subtitles_in_video(video_accompaniment_mp4, subtitles_karaoke_ass, force=True)
 
         # progress.notify(f"Showing quality report {project_name}")
         # evaluate_quality(vocals_wav, transcript_json)
 
-        if not os.path.exists(media_dir):
-            os.makedirs(media_dir)
-
-        link_path = os.path.relpath(media_dir, start=project_dir)
-        os.symlink(f"{link_path}/{os.path.basename(video_accompaniment_mp4)}", f"{media_dir}/{project_data['artist']} - {project_data['title']}.mp4")
-        os.symlink(f"{link_path}/{os.path.basename(subtitles_karaoke_ass)}", f"{media_dir}/{project_data['artist']} - {project_data['title']}.ass")
     except:
         print(traceback.format_exc())
     # progress.notify(f"Splitting {speech_to_text_target} track based on vocals silences")

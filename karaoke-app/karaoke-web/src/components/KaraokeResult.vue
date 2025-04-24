@@ -1,42 +1,70 @@
 <template>
-  <video :src="projectData.video_accompaniment_mp4" id="video" controls width="1024" height="768"></video>
-<!--  <video id="my-video" class="video-js" controls preload="auto"width="640" height="264" data-setup='{}'>-->
-<!--    <source :src="projectData.video_accompaniment_mp4" type="video/mp4" />-->
-<!--  </video>-->
+  <v-card
+    class="py-4"
+    color="surface-variant"
+    prepend-icon="mdi-rocket-launch-outline"
+    rounded="lg"
+    variant="tonal"
+  >
+    <!--    <template #image>-->
+    <!--      <v-img position="top right"/>-->
+    <!--    </template>-->
+
+    <template #title>
+      <h2 class="text-h5 font-weight-bold">
+        Voilà ce que ça donne
+      </h2>
+    </template>
+
+    <template #text>
+      <v-row class="mt-5">
+        <v-col cols="4" class="my-0 py-0">
+          <v-switch density="compact" color="primary" v-model="withVoice" label="Avec la voix"></v-switch>
+        </v-col>
+        <v-col cols="4" class="my-0 pt-3 pb-0">
+          <a :href="withVoice ? projectData.lyrics_video_mp4 : projectData.karaoke_video_mp4" download>Télécharger la vidéo</a>
+        </v-col>
+        <v-col cols="3" class="my-0 pt-3 pb-0">
+          <a :href="withVoice ? projectData.lyrics_subtitles_ass : projectData.karaoke_subtitles_ass" download>Télécharger les sous-titres</a>
+        </v-col>
+      </v-row>
+      <v-row v-if="withVoice" class="mt-5">
+        <v-col cols="12">
+          <VideoWithSubtitles
+            :video-url="projectData.video_mp4"
+            :subtitles-url="projectData.subtitles_segments_ass"
+          ></VideoWithSubtitles>
+        </v-col>
+      </v-row>
+      <v-row v-else class="mt-5">
+        <v-col cols="12">
+          <VideoWithSubtitles
+            :video-url="projectData.video_accompaniment_mp4"
+            :subtitles-url="projectData.subtitles_segments_ass"
+          ></VideoWithSubtitles>
+        </v-col>
+      </v-row>
+
+    </template>
+    <template #actions>
+      <v-spacer></v-spacer>
+      <v-spacer></v-spacer>
+    </template>
+  </v-card>
+
 </template>
 
 <script>
 import ASS from 'ass-html5'
+import VideoWithSubtitles from "@/components/VideoWithSubtitles.vue";
 // import videojs from "video.js"
 
 export default {
+  components: {VideoWithSubtitles},
   props: ['projectData'],
-  async mounted() {
-    const res = await fetch(this.projectData.subtitles_segments_ass);
-    // const res = await fetch(this.projectData.subtitles_segments_ass);
-    let assSubs = await res.text();
-    console.log(assSubs)
-    const ass = new ASS({
-      assText: assSubs,
-      video: document.getElementById('video')
-    });
-    await ass.render();
-    // document.addEventListener('DOMContentLoaded', async () => {
-    //   const res = await fetch(this.projectData.subtitles_segments_ass);
-    //   const assSubs = await res.text();
-    //   const player = videojs('my-video');
-    //
-    //   player.ready(async () => {
-    //     // Get the video element from the player
-    //     const videoElement = player.el().getElementsByTagName('video')[0];
-    //     const ass = new ASS.default({
-    //       assText: assSubs,
-    //       video: videoElement
-    //     });
-    //     await ass.render();
-    //   });
-    // });
-  }
+  data: () => ({
+    withVoice: false,
+  })
 }
 
 </script>
