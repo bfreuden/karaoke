@@ -48,6 +48,9 @@
     </template>
     <template #actions>
       <v-spacer></v-spacer>
+      <v-btn variant="flat" color="primary" @click="correctAlignment">
+        Corriger l'alignement des paroles
+      </v-btn>
       <v-spacer></v-spacer>
     </template>
   </v-card>
@@ -57,14 +60,22 @@
 <script>
 import ASS from 'ass-html5'
 import VideoWithSubtitles from "@/components/VideoWithSubtitles.vue";
+import {api} from "@/api.js";
 // import videojs from "video.js"
 
 export default {
   components: {VideoWithSubtitles},
-  props: ['projectData'],
+  props: ['projectName', 'projectData'],
   data: () => ({
     withVoice: false,
-  })
+  }),
+  methods: {
+    async correctAlignment() {
+      const data = {alignment_correction: true}
+      await api.patch(`/karaoke/${this.projectName}`, data)
+      this.$emit('correct-alignment');
+    }
+  }
 }
 
 </script>

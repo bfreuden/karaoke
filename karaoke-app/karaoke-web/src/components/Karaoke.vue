@@ -59,12 +59,24 @@
         ></GenerateKaraoke>
       </v-col>
       <v-col
-        v-if="projectName && projectData.video_accompaniment_mp4"
+        v-if="projectName && projectData.video_accompaniment_mp4 && projectData.alignment_correction === undefined"
         cols="12"
       >
         <KaraokeResult
+          :project-name="projectName"
           :project-data="projectData"
+          @correct-alignment="getKaraokeData"
         ></KaraokeResult>
+      </v-col>
+      <v-col
+        v-if="projectName && projectData.video_accompaniment_mp4 && projectData.alignment_correction === true"
+        cols="12"
+      >
+        <CorrectSegmentAlignment
+          :project-name="projectName"
+          :project-data="projectData"
+          @alignment-corrected="getKaraokeData"
+        ></CorrectSegmentAlignment>
       </v-col>
 
     </v-row>
@@ -82,10 +94,12 @@ import SelectVideo from "@/components/SelectVideo.vue";
 import SelectLyrics from "@/components/SelectLyrics.vue";
 import GenerateKaraoke from "@/components/GenerateKaraoke.vue";
 import KaraokeResult from "@/components/KaraokeResult.vue";
+import CorrectSegmentAlignment from "@/components/CorrectSegmentAlignment.vue";
 
 export default {
   components: {
     KaraokeResult,
+    CorrectSegmentAlignment,
     GenerateKaraoke,
     OpenKaraoke,
     SelectLyrics, SelectVideo, WaveSurferExampleNative, WaveSurferExample, NewOrExistingKaraoke, NewKaraoke},

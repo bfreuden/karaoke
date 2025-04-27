@@ -29,7 +29,7 @@ from directories import data_dir, media_dir, webapp_dir
 
 from progress_notifier import WebSocketProgressNotifier
 from guess_lyrics_language import supported_languages, guess_language
-
+from start_segments_adjustment import start_segments_adjustment
 
 generate_executor = ThreadPoolExecutor(max_workers=1)
 
@@ -199,6 +199,7 @@ class KaraokePatch(BaseModel):
     genius_url: Optional[str] = Field(None)
     lyrics: Optional[str] = Field(None)
     language: Optional[str] = Field(None)
+    alignment_correction: Optional[bool] = Field(None)
 
 
 @api.get("/languages", response_model=List[str])
@@ -221,6 +222,7 @@ class KaraokeData(KaraokePatch):
     karaoke_subtitles_ass: Optional[str] = Field(None)
     lyrics_video_mp4: Optional[str] = Field(None)
     lyrics_subtitles_ass: Optional[str] = Field(None)
+    alignment_correction: Optional[bool] = Field(None)
 
 from create_media_links import karaoke_video_file, karaoke_subtitles_file, lyrics_video_file, lyrics_subtitles_file
 
@@ -363,6 +365,56 @@ async def gen_karaoke(
     # background_tasks.add_task(hello)
     # background_tasks.add_task(generate_karaoke, project_dir, progress, False)
     generate_executor.submit(generate_karaoke, project_dir, progress, False)
+
+
+class SegmentAdjustment(BaseModel):
+    start: float
+    end: float
+    text: str
+
+class SegmentsAdjustment(BaseModel):
+    sample_rate: int
+    audio_duration: float
+    nb_samples: int
+    initial_start: float
+    corrected_segments: List[SegmentAdjustment]
+    next_suggested_segments: List[SegmentAdjustment]
+
+class NonSilenceSegment(BaseModel):
+    start: float
+    end: float
+
+class NonSilenceSegments(BaseModel):
+    segments: List[NonSilenceSegment] = Field(None)
+
+
+@api.post("/karaoke/{project_name}/_start_segments_adjustment", response_model=SegmentsAdjustment)
+async def gen_segments_adjustment(
+        project_name: str,
+):
+    project_dir = f'{data_dir}/{project_name}'
+    segments_adjustment = start_segments_adjustment(f'{project_dir}/transcript.json', f'{project_dir}/split-summary.json', f'{project_dir}/vocals.wav')
+    with open(segments_adjustment, mode="r") as fp:
+        return json.load(fp)
+
+
+@api.get("/karaoke/{project_name}/segments_adjustment", response_model=SegmentsAdjustment)
+async def get_segments_adjustment(
+        project_name: str,
+):
+    segments_adjustment = f'{data_dir}/{project_name}/segments-adjustment.json'
+    with open(segments_adjustment, mode="r") as fp:
+        return json.load(fp)
+
+
+@api.get("/karaoke/{project_name}/non_silence_segments", response_model=NonSilenceSegments)
+async def get_non_silence_segments(
+        project_name: str,
+):
+    split_summary_json = f'{data_dir}/{project_name}/split-summary.json'
+    with open(split_summary_json, mode="r") as fp:
+        split_summary = json.load(fp)
+    return {"segments": [{'start': segment['start'], 'end': segment['end']} for segment in split_summary['segments']]}
 
 async def read_karaoke_data(project_name):
     project_dir = f'{data_dir}/{project_name}'
