@@ -1,44 +1,24 @@
 import json
 import os
+import uuid
+
 from scipy.io import wavfile
 
-def start_segments_adjustment(transcript_json, split_summary_json, vocals_wav, force=True):
+def start_segments_adjustment(transcript_json, force=True):
     project_dir = os.path.dirname(transcript_json)
-    output_file = f'{project_dir}/segments-adjustment.json'
+    output_file = f'{project_dir}/transcript-fixed.json'
     if os.path.exists(output_file) and not force:
         return output_file
     # open data
     with open(transcript_json, mode="r") as fp:
         transcript = json.load(fp)
-    with open(split_summary_json, mode="r") as fp:
-        split_summary = json.load(fp)
 
-    # find the start of vocals
-    initial_start = get_initial_start(split_summary, transcript)
-    sample_rate, samples = wavfile.read(filename=vocals_wav)
-    audio_duration = len(samples)/sample_rate
-    segment_adjustment = {
-        'sample_rate': sample_rate,
-        'audio_duration': audio_duration,
-        'nb_samples': len(samples),
-        'initial_start': max(0.0, initial_start - 1.0),
-        'corrected_segments': [],
-        # 'next_suggested_segment': {
-        #     'start': transcript['segments'][0]['start'],
-        #     'end': transcript['segments'][0]['end'],
-        #     'text': transcript['segments'][0]['text'],
-        # }
-        'next_suggested_segments': [
-            {
-                'start': segment['start'],
-                'end': segment['end'],
-                'text': segment['text'],
-            }
-            for segment in transcript['segments']
-        ]
-    }
+    del(transcript["text"])
+    for segment in transcript["segments"]:
+        segment["validated"] = False
+        segment["id"] = str(uuid.uuid4())
     with open(output_file, mode="w") as fp:
-        json.dump(segment_adjustment, fp, indent=4)
+        json.dump(transcript, fp, indent=4)
     return output_file
 
 
@@ -59,21 +39,18 @@ def start_segments_adjustment(transcript_json, split_summary_json, vocals_wav, f
     #     },
     # }
     # # if prev_end > prior_context_seconds:
+    # pass
 
 
-
-    pass
-
-
-def get_initial_start(split_summary, transcript):
-    # use the start of the first non-silence
-    non_silence_start = split_summary["segments"][0]["start"]
-    initial_start = non_silence_start
-    transcript_start = transcript["segments"][0]["start"]
-    # try to trust the alignment if not too far away (it can be a mistake)
-    if initial_start - 2 < transcript_start < initial_start + 2:
-        initial_start = min(non_silence_start, transcript_start)
-    return initial_start
+# def get_initial_start(split_summary, transcript):
+#     # use the start of the first non-silence
+#     non_silence_start = split_summary["segments"][0]["start"]
+#     initial_start = non_silence_start
+#     transcript_start = transcript["segments"][0]["start"]
+#     # try to trust the alignment if not too far away (it can be a mistake)
+#     if initial_start - 2 < transcript_start < initial_start + 2:
+#         initial_start = min(non_silence_start, transcript_start)
+#     return initial_start
 
 
 # def compute_average_word_duration(transcript):
@@ -98,6 +75,6 @@ if __name__ == '__main__':
     project_dir = get_sample_project_dir(project_name)
     start_segments_adjustment(
         f'{project_dir}/transcript.json',
-        f'{project_dir}/split-summary.json',
-        f'{project_dir}/vocals.wav',
+        # f'{project_dir}/split-summary.json',
+        # f'{project_dir}/vocals.wav',
         force=True)

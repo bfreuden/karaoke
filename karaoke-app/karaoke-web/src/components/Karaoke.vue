@@ -1,5 +1,5 @@
 <template>
-  <v-container class="fill-height" width="900" max-width="900" >
+  <v-container class="fill-height" :max-width="width" >
 
     <v-row v-if="initialized">
       <v-col
@@ -73,6 +73,7 @@
         cols="12"
       >
         <CorrectSegmentAlignment
+          :width="width"
           :project-name="projectName"
           :project-data="projectData"
           @alignment-corrected="getKaraokeData"
@@ -108,6 +109,7 @@ export default {
     projectName: null,
     projectData: {},
     freshKaraokeAction: null,
+    width: "1366px",
   }),
   async beforeMount() {
     try {

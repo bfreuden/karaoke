@@ -368,24 +368,29 @@ async def gen_karaoke(
 
 
 class SegmentAdjustment(BaseModel):
+    id: str
     start: float
     end: float
     text: str
+    validated: bool
 
-class SegmentsAdjustment(BaseModel):
-    sample_rate: int
-    audio_duration: float
-    nb_samples: int
-    initial_start: float
-    corrected_segments: List[SegmentAdjustment]
-    next_suggested_segments: List[SegmentAdjustment]
-
-class NonSilenceSegment(BaseModel):
+class SegmentValidation(BaseModel):
+    id: str
     start: float
     end: float
 
-class NonSilenceSegments(BaseModel):
-    segments: List[NonSilenceSegment] = Field(None)
+class SegmentsAdjustment(BaseModel):
+    segments: List[SegmentAdjustment]
+
+# class NonSilenceSegment(BaseModel):
+#     start: float
+#     end: float
+#
+# class NonSilenceSegments(BaseModel):
+#     segments: List[NonSilenceSegment] = Field(None)
+
+class SilenceBoundaries(BaseModel):
+    boundaries: List[float]
 
 
 @api.post("/karaoke/{project_name}/_start_segments_adjustment", response_model=SegmentsAdjustment)
@@ -393,28 +398,68 @@ async def gen_segments_adjustment(
         project_name: str,
 ):
     project_dir = f'{data_dir}/{project_name}'
-    segments_adjustment = start_segments_adjustment(f'{project_dir}/transcript.json', f'{project_dir}/split-summary.json', f'{project_dir}/vocals.wav')
+    segments_adjustment = start_segments_adjustment(f'{project_dir}/transcript.json')
     with open(segments_adjustment, mode="r") as fp:
         return json.load(fp)
 
 
-@api.get("/karaoke/{project_name}/segments_adjustment", response_model=SegmentsAdjustment)
+@api.get("/karaoke/{project_name}/segments-adjustment", response_model=SegmentsAdjustment)
 async def get_segments_adjustment(
         project_name: str,
 ):
-    segments_adjustment = f'{data_dir}/{project_name}/segments-adjustment.json'
+    segments_adjustment = f'{data_dir}/{project_name}/transcript-fixed.json'
     with open(segments_adjustment, mode="r") as fp:
         return json.load(fp)
 
 
-@api.get("/karaoke/{project_name}/non_silence_segments", response_model=NonSilenceSegments)
-async def get_non_silence_segments(
+@api.post("/karaoke/{project_name}/_validate_segment")
+async def adjust_segment(
+        project_name: str,
+        validation: SegmentValidation,
+        response: Response,
+):
+    segments_adjustment = f'{data_dir}/{project_name}/transcript-fixed.json'
+    with open(segments_adjustment, mode="r") as fp:
+        transcript = json.load(fp)
+    found = False
+    for segment in transcript["segments"]:
+        if segment["id"] == validation.id:
+            segment["start"] = validation.start
+            segment["end"] = validation.end
+            segment["validated"] = True
+            found = True
+            break
+    if not found:
+        response.status_code = 400
+    else:
+        with open(segments_adjustment, mode="w") as fp:
+            json.dump(transcript, fp, indent=4)
+        response.status_code = 204
+
+@api.get("/karaoke/{project_name}/silence-boundaries", response_model=SilenceBoundaries)
+async def get_silence_boundaries(
         project_name: str,
 ):
     split_summary_json = f'{data_dir}/{project_name}/split-summary.json'
     with open(split_summary_json, mode="r") as fp:
         split_summary = json.load(fp)
-    return {"segments": [{'start': segment['start'], 'end': segment['end']} for segment in split_summary['segments']]}
+    total_start = split_summary['total']['start']
+    total_end = split_summary['total']['end']
+
+    silence_boundaries = []
+    segment_end = -1
+    for index, segment in enumerate(split_summary['segments']):
+        segment_start = segment['start']
+        segment_end = segment['end']
+        if index == 0 and total_start < segment_start:
+            silence_boundaries.append(total_start)
+        silence_boundaries.append(segment_start)
+        silence_boundaries.append(segment_end)
+
+    if segment_end == -1 or segment_end < total_end:
+        silence_boundaries.append(total_end)
+
+    return {"boundaries": silence_boundaries}
 
 async def read_karaoke_data(project_name):
     project_dir = f'{data_dir}/{project_name}'
