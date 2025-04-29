@@ -21,11 +21,6 @@
         <v-col v-if="loading" cols="12">
           <v-progress-circular indeterminate></v-progress-circular>
         </v-col>
-        <v-col v-else cols="12">
-          <h2 class="text-h5 font-weight-bold">
-            {{ currentSegment.text }}
-          </h2>
-        </v-col>
         <v-col v-if="!loading" cols="4">
           <span class="mr-5">Déplacer la lecture peu avant la frontière</span>
         </v-col>
@@ -41,7 +36,6 @@
           <v-btn color="primary" class="mr-5" @click="moveRegionStartToPreviousBoundary">précédente (Q)</v-btn><v-btn color="primary" @click="moveRegionStartToNextBoundary">suivante (A)</v-btn>
         </v-col>
         <v-col v-if="!loading" cols="4">
-          <v-switch v-model="autoValidation" label="Validation automatique en sortie de ligne"></v-switch>
         </v-col>
         <v-col v-if="!loading" cols="4">
           <span class="mr-5">Déplacer la fin du segment à la frontière</span>
@@ -50,8 +44,13 @@
           <v-btn color="primary" class="mr-5" @click="moveRegionEndToPreviousBoundary">précédente (D)</v-btn><v-btn color="primary" @click="moveRegionEndToNextBoundary">suivante (E)</v-btn>
         </v-col>
         <v-col v-if="!loading" cols="4">
+        </v-col>
+        <v-col v-if="!loading" cols="4">
+          <v-switch v-model="autoValidation" label="Validation automatique en sortie de ligne"></v-switch>
+        </v-col>
+        <v-col v-if="!loading" cols="4">
           <v-btn color="primary" v-if="!autoValidation" @click="validateCurrentRegion" :disabled="!currentSegment.text">Valider la ligne courante</v-btn>
-          <v-btn color="primary" v-if="autoValidation" @click="cancelPreviousValidation" :disabled="!validationPending">Annuler la précédente validation</v-btn>/
+          <v-btn color="primary" v-if="autoValidation" @click="cancelPreviousValidation" :disabled="!validationPending">Annuler la précédente validation</v-btn>
         </v-col>
         <v-col cols="12" :style="`width: ${width}`">
           <div id="waveform-vocals" :style="loading ? 'display:none;' : ''"></div>
@@ -275,7 +274,7 @@ export default {
     seekPreviousBoundary() {
       const boundary = this.findPreviousBoundary()
       if (boundary !== null)
-          this.setTime(boundary)
+          this.setTime(Math.max(0, boundary-0.7))
     },
     findPreviousBoundary() {
       const time = this.time
@@ -287,8 +286,8 @@ export default {
     seekNextBoundary() {
       const boundary = this.findNextBoundary()
       if (boundary !== null)
-        this.setTime(boundary)
-    },
+        this.setTime(Math.max(0, boundary-0.7))
+     },
     findNextBoundary() {
       const time = this.time
       for (const boundary of this.$silenceBoundaries)
