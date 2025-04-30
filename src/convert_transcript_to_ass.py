@@ -7,7 +7,8 @@ import math
 def convert_transcript_to_segments_ass(transcript_json, force=False):
     from directories import resources_dir
     header_ass = f'{resources_dir}/header.ass'
-    output_file = f'{os.path.dirname(transcript_json)}/subtitles-segments.ass'
+    fixed = "-fixed" if "-fixed" in transcript_json else ""
+    output_file = f'{os.path.dirname(transcript_json)}/subtitles-segments{fixed}.ass'
     if os.path.exists(output_file) and not force:
         return
     with open(transcript_json, mode='r', encoding='utf-8') as file:

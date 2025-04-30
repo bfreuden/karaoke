@@ -5,7 +5,8 @@ import math
 
 
 def add_words_to_segments_ass(subtitles_segments_ass, transcript_json, force=False):
-    output_file = f'{os.path.dirname(transcript_json)}/subtitles-words.ass'
+    fixed = "-fixed" if "-fixed" in transcript_json else ""
+    output_file = f'{os.path.dirname(transcript_json)}/subtitles-words{fixed}.ass'
     if os.path.exists(output_file) and not force:
         return output_file
     with open(transcript_json, mode='r', encoding='utf-8') as file:

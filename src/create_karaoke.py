@@ -112,6 +112,10 @@ def generate_karaoke(project_dir, progress=PrintProgressNotifier(STEPS), force=F
         progress.notify(f"Creating media links")
         create_media_links(project_data, video_mp4, video_accompaniment_mp4, subtitles_karaoke_ass, force=force)
 
+        # progress.notify(f"Converting vocals to mono")
+        # mono_wav = convert_wav_to_mono(vocals_wav, force=force)
+
+
         # progress.notify(f"Inserting subtitles in video")
         # video_karaoke_mp4 = insert_subtitles_in_video(video_accompaniment_mp4, subtitles_karaoke_ass, force=True)
 

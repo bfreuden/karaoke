@@ -55,4 +55,5 @@ if __name__ == '__main__':
     project_name = 'metallica-turn-the-page'
     project_dir = get_sample_project_dir(project_name)
     project_data  = get_or_create_sample_project(project_name)
-    split_words_into_syllables( f'{project_dir}/lyrics.txt', project_data['language'], force=True)
+    language = project_data['language']
+    split_words_into_syllables( f'{project_dir}/lyrics.txt', language, force=True)
