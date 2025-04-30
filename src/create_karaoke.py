@@ -17,6 +17,7 @@ from convert_transcript_to_ass import convert_transcript_to_segments_ass
 from add_words_to_segments_ass import add_words_to_segments_ass
 from apply_karaoke_mode_to_words_ass import apply_karaoke_mode_to_words_ass
 from replace_audio_track_in_video import replace_audio_track_in_video
+from split_words_into_syllables import split_words_into_syllables
 # from insert_subtitles_in_video import insert_subtitles_in_video
 # from evaluate_quality import evaluate_quality
 from insert_silences_in_alignment import insert_silences_in_alignment
@@ -29,7 +30,7 @@ from create_media_links import create_media_links
 # from transcribe_speech_to_text import transcribe_segments_speech_to_text
 # from fix_segment_start_end_timings import fix_segment_start_end_timings
 
-STEPS = 18
+STEPS = 19
 
 def generate_karaoke(project_dir, progress=PrintProgressNotifier(STEPS), force=False):
     try:
@@ -43,6 +44,7 @@ def generate_karaoke(project_dir, progress=PrintProgressNotifier(STEPS), force=F
 
         youtube_url = project_data['youtube_url']
         genius_url = project_data['genius_url']
+        language = project_data['language']
 
         speech_to_text_target = project_data[
             'speech_to_text_target'] if 'speech_to_text_target' in project_data else default_speech_to_text_target
@@ -56,6 +58,9 @@ def generate_karaoke(project_dir, progress=PrintProgressNotifier(STEPS), force=F
 
         progress.notify("Downloading lyrics")
         lyrics_txt = download_lyrics(genius_url, project_dir, force=force)
+
+        progress.notify("Splitting words into syllables")
+        lyrics_syllables_txt = split_words_into_syllables(lyrics_txt, language, force=force)
 
         progress.notify("Guessing lyrics language")
         language = guess_lyrics_language(lyrics_txt, force=False)
