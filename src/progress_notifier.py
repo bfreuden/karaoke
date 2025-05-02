@@ -5,7 +5,7 @@ from asyncio import Queue
 class ProgressNotifier(ABC):
 
     def __init__(self, steps):
-        self.step = 0
+        self.step = 1
         self.steps = steps
 
     def progress(self):

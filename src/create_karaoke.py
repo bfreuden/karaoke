@@ -23,7 +23,7 @@ from split_words_into_syllables import split_words_into_syllables
 from insert_silences_in_alignment import insert_silences_in_alignment
 from progress_notifier import PrintProgressNotifier
 from split_audio import split_audio
-from create_media_links import create_media_links
+from create_media_links import create_media_links_for_generate
 
 # from align_transcript_on_lyrics import align_transcript_on_lyrics
 # from split_audio import split_audio
@@ -110,7 +110,7 @@ def generate_karaoke(project_dir, progress=PrintProgressNotifier(STEPS), force=F
         video_accompaniment_mp4 = replace_audio_track_in_video(video_mp4, accompaniment_mp3, force=force)
 
         progress.notify(f"Creating media links")
-        create_media_links(project_data, video_mp4, video_accompaniment_mp4, subtitles_karaoke_ass, force=force)
+        create_media_links_for_generate(project_data, video_mp4, video_accompaniment_mp4, subtitles_karaoke_ass, force=force)
 
         # progress.notify(f"Converting vocals to mono")
         # mono_wav = convert_wav_to_mono(vocals_wav, force=force)

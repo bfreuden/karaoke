@@ -30,9 +30,16 @@ def align_lyrics_with_audio(audio_mono_wav_or_list, lyrics_txt_or_list, language
     else:
         model_name = f'nvidia/stt_{language}_fastconformer_hybrid_large_pc'
     client = docker.from_env()
-    client.containers.run('bfreudens/nemo-forced-aligner:2.2.1', f'python3 align.py manifest_filepath=/input/manifest.json pretrained_name="{model_name}" additional_segment_grouping_separator="|" output_dir=/input', auto_remove=True, mounts=[Mount("/input", project_dir, type="bind")])
-    return words_ctm
-
+    container = client.containers.run(
+        'bfreudens/nemo-forced-aligner:2.2.1',
+        f'python3 align.py manifest_filepath=/input/manifest.json pretrained_name="{model_name}" additional_segment_grouping_separator="|" output_dir=/input',
+        auto_remove=True,
+        mounts=[Mount("/input", project_dir, type="bind")],
+        detach=True
+    )
+    output = container.attach(stdout=True, stream=True, logs=True)
+    for line in output:
+        print(line.decode('utf-8'))
 
 if __name__ == '__main__':
     from sample_projects import get_sample_project_items

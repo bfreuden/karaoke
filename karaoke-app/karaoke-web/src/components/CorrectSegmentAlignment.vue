@@ -46,7 +46,7 @@
         <v-col v-if="!loading" cols="4">
         </v-col>
         <v-col v-if="!loading" cols="4">
-          <v-switch v-model="autoValidation" label="Validation automatique en sortie de ligne"></v-switch>
+          <v-switch v-model="autoValidation" label="Validation automatique en sortie de segment"></v-switch>
         </v-col>
         <v-col v-if="!loading" cols="4">
           <v-btn color="primary" v-if="!autoValidation" @click="validateCurrentRegion" :disabled="!currentSegment.text">Valider la ligne courante</v-btn>
@@ -416,11 +416,11 @@ export default {
         }
       });
     },
-    // async alignmentCorrected() {
-    //   const data = { alignment_correction: (this.projectData.alignment_correction + 1)}
-    //   await api.patch(`/karaoke/${this.projectName}`, data)
-    //   this.$emit('correct-alignment');
-    // }
+    async alignmentCorrected() {
+      const data = { alignment_correction: false}
+      await api.patch(`/karaoke/${this.projectName}`, data)
+      this.$emit('alignment-corrected');
+    }
   }
 }
 

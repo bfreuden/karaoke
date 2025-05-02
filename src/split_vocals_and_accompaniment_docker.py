@@ -15,7 +15,15 @@ def split_vocals_and_accompaniment(audio_mp3, force=False):
             return (vocals_wav, accompaniment_wav)
 
     client = docker.from_env()
-    client.containers.run('bfreudens/spleeter:2.4.2', f'python3 spleet.py --destination /exchange /exchange/{os.path.basename(audio_mp3)}', auto_remove=True, mounts=[Mount("/exchange", project_dir, type="bind")])
+    container = client.containers.run(
+        'bfreudens/spleeter:2.4.2', f'python3 spleet.py --destination /exchange /exchange/{os.path.basename(audio_mp3)}',
+        auto_remove=True,
+        mounts=[Mount("/exchange", project_dir, type="bind")],
+        detach=True
+    )
+    output = container.attach(stdout=True, stream=True, logs=True)
+    for line in output:
+        print(line.decode('utf-8'))
     return (vocals_wav, accompaniment_wav)
 
 

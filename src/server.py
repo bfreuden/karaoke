@@ -22,7 +22,8 @@ from pydantic import BaseModel, Field
 from typing import List
 from json_file_session_backend import JsonFileMemoryBackend
 from download_lyrics import search_genius_url, download_lyrics
-from create_karaoke import STEPS, generate_karaoke
+from create_karaoke import STEPS as CREATE_STEPS, generate_karaoke
+from realign_karaoke import STEPS as REALIGN_STEPS, realign_karaoke
 import base64
 import re
 from directories import data_dir, media_dir, webapp_dir
@@ -200,6 +201,7 @@ class KaraokePatch(BaseModel):
     lyrics: Optional[str] = Field(None)
     language: Optional[str] = Field(None)
     alignment_correction: Optional[bool] = Field(None)
+    realignment_ready: Optional[bool] = Field(None)
 
 
 @api.get("/languages", response_model=List[str])
@@ -216,15 +218,28 @@ class KaraokeData(KaraokePatch):
     video_mp4: Optional[str] = Field(None)
     video_accompaniment_mp4: Optional[str] = Field(None)
     subtitles_segments_ass: Optional[str] = Field(None)
+    subtitles_segments_fixed_ass: Optional[str] = Field(None)
     subtitles_words_ass: Optional[str] = Field(None)
     subtitles_words_karaoke_ass: Optional[str] = Field(None)
     karaoke_video_mp4: Optional[str] = Field(None)
     karaoke_subtitles_ass: Optional[str] = Field(None)
     lyrics_video_mp4: Optional[str] = Field(None)
     lyrics_subtitles_ass: Optional[str] = Field(None)
+    karaoke_video_preview_mp4: Optional[str] = Field(None)
+    karaoke_subtitles_preview_ass: Optional[str] = Field(None)
+    lyrics_video_preview_mp4: Optional[str] = Field(None)
+    lyrics_subtitles_preview_ass: Optional[str] = Field(None)
+    karaoke_video_realigned_mp4: Optional[str] = Field(None)
+    karaoke_subtitles_realigned_ass: Optional[str] = Field(None)
+    lyrics_video_realigned_mp4: Optional[str] = Field(None)
+    lyrics_subtitles_realigned_ass: Optional[str] = Field(None)
     alignment_correction: Optional[bool] = Field(None)
+    realignment_ready: Optional[bool] = Field(None)
 
-from create_media_links import karaoke_video_file, karaoke_subtitles_file, lyrics_video_file, lyrics_subtitles_file
+from create_media_links import karaoke_video_file_preview, karaoke_subtitles_file_preview, lyrics_video_file_preview, \
+    lyrics_subtitles_file_preview, karaoke_video_file_realigned, lyrics_video_file_realigned, \
+    lyrics_subtitles_file_realigned, karaoke_subtitles_file_realigned
+
 
 @api.get("/karaoke/{project_name}", response_model=KaraokeData)
 async def get_karaoke(project_name: str):
@@ -241,14 +256,14 @@ async def get_karaoke(project_name: str):
             *[(f"{name.replace('-', '_')}_mp3", f"{name}.mp3") for name in ["accompaniment", "audio", "vocals"] ],
             *[(f"{name.replace('-', '_')}_wav", f"{name}.wav") for name in ["accompaniment", "audio", "vocals"] ],
             *[(f"{name.replace('-', '_')}_mp4", f"{name}.mp4") for name in ["video", "video-accompaniment"] ],
-            *[(f"{name.replace('-', '_')}_ass", f"{name}.ass") for name in ["subtitles-segments", "subtitles-words", "subtitles-words-karaoke"] ],
+            *[(f"{name.replace('-', '_')}_ass", f"{name}.ass") for name in ["subtitles-segments", "subtitles-segments-fixed", "subtitles-words", "subtitles-words-karaoke"] ],
         ]:
             if os.path.exists(f'{project_dir}/{file}'):
                 project_data[key] = f'/data/{project_name}/{file}'
 
         for key, file in [
-            *[(f"{name.replace('-', '_')}_mp4", f"{file_supplier(project_data)}") for name, file_supplier in [ ("karaoke-video", karaoke_video_file), ("lyrics-video", lyrics_video_file)] ],
-            *[(f"{name.replace('-', '_')}_ass", f"{file_supplier(project_data)}") for name, file_supplier in [ ("karaoke-subtitles", karaoke_subtitles_file), ("lyrics-subtitles", lyrics_subtitles_file)] ],
+            *[(f"{name.replace('-', '_')}_mp4", f"{file_supplier(project_data)}") for name, file_supplier in [("karaoke-video-preview", karaoke_video_file_preview), ("lyrics-video-preview", lyrics_video_file_preview), ("karaoke-video-realigned", karaoke_video_file_realigned), ("lyrics-video-realigned", lyrics_video_file_realigned)]],
+            *[(f"{name.replace('-', '_')}_ass", f"{file_supplier(project_data)}") for name, file_supplier in [("karaoke-subtitles-preview", karaoke_subtitles_file_preview), ("lyrics-subtitles-preview", lyrics_subtitles_file_preview), ("karaoke-subtitles-realigned", karaoke_subtitles_file_realigned), ("lyrics-subtitles-realigned", lyrics_subtitles_file_realigned)]],
         ]:
             if os.path.exists(f'{media_dir}/{file}'):
                 print(f'{key}=/media/{file}')
@@ -355,16 +370,41 @@ async def gen_karaoke(
     (websocket, queue) = websockets[f'{real_session_id}-{context}']
     print(f"websocket: {websocket}")
     print(f"queue: {queue}")
-    progress = WebSocketProgressNotifier(STEPS, websocket, queue)
+    progress = WebSocketProgressNotifier(CREATE_STEPS, websocket, queue)
     # progress.notify("Hello")
-    await websocket.send_json({
-        'step': 10,
-        'steps': 20,
-        'message': "hello",
-    })
+    # await websocket.send_json({
+    #     'step': 10,
+    #     'steps': 20,
+    #     'message': "hello",
+    # })
     # background_tasks.add_task(hello)
     # background_tasks.add_task(generate_karaoke, project_dir, progress, False)
     generate_executor.submit(generate_karaoke, project_dir, progress, False)
+
+
+@api.post("/karaoke/{project_name}/_realign", dependencies=[Depends(cookie)])
+async def gen_karaoke(
+        project_name: str,
+        # background_tasks: BackgroundTasks,
+        session_id: UUID = Depends(cookie)
+):
+    project_dir = f'{data_dir}/{project_name}'
+    real_session_id = str(session_id)
+    context = "realign"
+    print(f"sending progress notifications to websocket associated to {real_session_id} and context {context}")
+    (websocket, queue) = websockets[f'{real_session_id}-{context}']
+    print(f"websocket: {websocket}")
+    print(f"queue: {queue}")
+    progress = WebSocketProgressNotifier(REALIGN_STEPS, websocket, queue)
+    # progress.notify("Hello")
+    # await websocket.send_json({
+    #     'step': 10,
+    #     'steps': 20,
+    #     'message': "hello",
+    # })
+    # background_tasks.add_task(hello)
+    # background_tasks.add_task(generate_karaoke, project_dir, progress, False)
+    generate_executor.submit(realign_karaoke, project_dir, progress, False)
 
 
 class SegmentAdjustment(BaseModel):

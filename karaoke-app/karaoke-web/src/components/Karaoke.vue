@@ -63,6 +63,7 @@
         cols="12"
       >
         <KaraokeResult
+          version="preview"
           :project-name="projectName"
           :project-data="projectData"
           @correct-alignment="getKaraokeData"
@@ -78,6 +79,26 @@
           :project-data="projectData"
           @alignment-corrected="getKaraokeData"
         ></CorrectSegmentAlignment>
+      </v-col>
+      <v-col
+        v-if="projectName && projectData.video_accompaniment_mp4 && projectData.alignment_correction === false && !projectData.realignment_ready"
+        cols="12"
+      >
+        <RealignWords
+          :project-name="projectName"
+          @words-realigned="getKaraokeData"
+        ></RealignWords>
+      </v-col>
+      <v-col
+        v-if="projectName && projectData.video_accompaniment_mp4 && projectData.alignment_correction === false && projectData.realignment_ready"
+        cols="12"
+      >
+        <KaraokeResult
+          version="realigned"
+          :project-name="projectName"
+          :project-data="projectData"
+          @correct-alignment="getKaraokeData"
+        ></KaraokeResult>
       </v-col>
 
     </v-row>
@@ -96,9 +117,11 @@ import SelectLyrics from "@/components/SelectLyrics.vue";
 import GenerateKaraoke from "@/components/GenerateKaraoke.vue";
 import KaraokeResult from "@/components/KaraokeResult.vue";
 import CorrectSegmentAlignment from "@/components/CorrectSegmentAlignment.vue";
+import RealignWords from "@/components/RealignWords.vue";
 
 export default {
   components: {
+    RealignWords,
     KaraokeResult,
     CorrectSegmentAlignment,
     GenerateKaraoke,
@@ -116,9 +139,11 @@ export default {
       const response = await api.get('/check-session')
       this.projectName = response.data.project_name
     } catch (error) {
-      if (error.response.status === 403) {
+      if (error.response && error.response.status === 403) {
         const response = await api.get('/create-session')
         this.projectName = response.data.project_name
+      } else {
+        console.error(error)
       }
     }
     if (this.projectName)

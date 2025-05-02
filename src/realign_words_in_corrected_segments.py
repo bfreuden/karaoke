@@ -66,6 +66,8 @@ def realign_words_in_corrected_segments(transcript_fixed_json, audio_mono_wav, l
             word["start"] += segment["start"]
             word["end"] += segment["start"]
             segment["words"].append(word)
+        segment["words"][0]["start"] = segment["start"]
+        segment["words"][-1]["end"] = segment["end"]
     with open(output_file, mode="w") as fp:
         json.dump(transcript_fixed, fp, indent=4)
     return output_file
