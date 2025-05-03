@@ -169,6 +169,12 @@ async def create_karaoke(new_karaoke: NewKaraoke, session_data: SessionData = De
         await backend.update(session_id, session_data)
         return session_data
 
+@api.post("/close-karaoke", dependencies=[Depends(cookie)], response_model=SessionData)
+async def close_karaoke(session_data: SessionData = Depends(verifier), session_id: UUID = Depends(cookie)):
+        session_data.project_name = None
+        await backend.update(session_id, session_data)
+        return session_data
+
 
 @api.post("/open-karaoke", dependencies=[Depends(cookie)], response_model=SessionData)
 async def open_karaoke(project_name: str, session_data: SessionData = Depends(verifier), session_id: UUID = Depends(cookie)):
@@ -438,10 +444,9 @@ async def gen_segments_adjustment(
         project_name: str,
 ):
     project_dir = f'{data_dir}/{project_name}'
-    segments_adjustment = start_segments_adjustment(f'{project_dir}/transcript.json')
-    with open(segments_adjustment, mode="r") as fp:
+    segments_adjustment_json = start_segments_adjustment(f'{project_dir}/transcript.json')
+    with open(segments_adjustment_json, mode="r") as fp:
         return json.load(fp)
-
 
 @api.get("/karaoke/{project_name}/segments-adjustment", response_model=SegmentsAdjustment)
 async def get_segments_adjustment(

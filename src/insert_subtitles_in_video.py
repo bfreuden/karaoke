@@ -13,9 +13,9 @@ def insert_subtitles_in_video(video_mp4, subtitles_ass, force=False):
     # seems to work with mp4 downloaded from youtube but not with with additional track (not re-encoded)?
     # os.system(f'ffmpeg -i {video_mp4} -vf ass={subtitles_ass} {video_subtitles_mp4}')
     # seems to work with mp4 with additional track but not re-encoded
-    os.system(f'ffmpeg -i {video_mp4} -filter_complex ass={subtitles_ass}  -c:a copy -c:v libx264 -crf 23 -preset slow  {video_subtitles_mp4}')
+    os.system(f'ffmpeg -i {video_mp4} -filter_complex ass={subtitles_ass}  -c:a copy -c:v libx264 -crf 23 -preset fast  {video_subtitles_mp4}')
     # example of a black video
-    # ffmpeg -loop 1 -i resources/black.png -i output/sting-shape-of-my-heart-official-music-video/accompaniment.mp3  -filter_complex ass=output/sting-shape-of-my-heart-official-music-video/subtitles-words-karaoke.ass  -c:v libx264 -tune stillimage -shortest output/sting-shape-of-my-heart-official-music-video/video-karaoke-black.mp4
+    # ffmpeg -f lavfi -i color=c=black:s=1920x1080:r=5  -filter_complex ass=subtitles-words-karaoke-fixed.ass  -i accompaniment.mp3 -crf 0 -c:a copy   -c:v libx264 -crf 23 -preset fast -shortest video-black.mp4
     return video_subtitles_mp4
 
 if __name__ == '__main__':

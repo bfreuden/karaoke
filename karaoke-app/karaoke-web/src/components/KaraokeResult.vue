@@ -80,6 +80,7 @@ export default {
     async correctAlignment() {
       const data = {alignment_correction: true}
       await api.patch(`/karaoke/${this.projectName}`, data)
+      await api.post(`/karaoke/${this.projectName}/_start_segments_adjustment`)
       this.$emit('correct-alignment');
     }
   }

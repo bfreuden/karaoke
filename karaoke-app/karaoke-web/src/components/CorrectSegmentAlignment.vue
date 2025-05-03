@@ -197,6 +197,9 @@ export default {
     //
     this.$vocalsRegions.on('region-updated', (region) => {
       console.log('Updated region', region)
+      region.setOptions({
+        color: `rgba(200, 200, 0, 0.3)`
+      })
     })
 
   // // Loop a region on click

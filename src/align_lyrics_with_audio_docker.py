@@ -10,7 +10,7 @@ def align_lyrics_with_audio(audio_mono_wav_or_list, lyrics_txt_or_list, language
     if not isinstance(lyrics_txt_or_list, list):
         lyrics_txt_or_list = [lyrics_txt_or_list]
     project_dir = os.path.abspath(os.path.dirname(audio_mono_wav_or_list[0]))
-
+    words_ctm = None
     with open(f'{project_dir}/manifest.json', mode='w') as file:
         for audio_mono_wav, lyrics_txt in zip(audio_mono_wav_or_list, lyrics_txt_or_list):
             words_ctm = os.path.abspath(f"{project_dir}/ctm/words/{Path(os.path.basename(audio_mono_wav)).stem}.ctm")
@@ -40,6 +40,7 @@ def align_lyrics_with_audio(audio_mono_wav_or_list, lyrics_txt_or_list, language
     output = container.attach(stdout=True, stream=True, logs=True)
     for line in output:
         print(line.decode('utf-8'))
+    return words_ctm
 
 if __name__ == '__main__':
     from sample_projects import get_sample_project_items

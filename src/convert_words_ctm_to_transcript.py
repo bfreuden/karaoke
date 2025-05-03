@@ -22,10 +22,15 @@ def convert_words_ctm_to_transcript(lyrics_txt, words_ctm, force=False):
     transcript = f'{project_dir}/transcript.json'
     if os.path.exists(transcript) and not force:
         return transcript
-    with open(words_ctm, mode='r') as file:
-        lines = [line for line in file.readlines() if line.strip() != '']
     with open(lyrics_txt, mode='r') as file:
         text = file.read().strip()
+    # sometimes NeMo refuses to do it:
+    # [NeMo I 2025-05-03 12:48:26 data_prep:285] Utterance vocals-mono-075 has too many tokens compared to the audio file duration. Will not generate output alignment files for this utterance.
+    if os.path.exists(words_ctm):
+        with open(words_ctm, mode='r') as file:
+            lines = [line for line in file.readlines() if line.strip() != '']
+    else:
+        raise Exception("no alignment")
     start = 0
     current_segment = create_segment()
     transcript_data = {

@@ -1,6 +1,15 @@
 <template>
   <v-container class="fill-height" :max-width="width" >
-
+    <v-fab
+      absolute
+      app
+      location="top right"
+      color="primary"
+      icon
+      @click="closeKaraoke"
+    >
+      <v-icon>mdi-reload</v-icon>
+    </v-fab>
     <v-row v-if="initialized">
       <v-col
         v-if="freshKaraoke && freshKaraokeAction === null"
@@ -59,7 +68,7 @@
         ></GenerateKaraoke>
       </v-col>
       <v-col
-        v-if="projectName && projectData.video_accompaniment_mp4 && projectData.alignment_correction === undefined"
+        v-if="projectName && projectData.video_accompaniment_mp4 && projectData.alignment_correction === null"
         cols="12"
       >
         <KaraokeResult
@@ -156,6 +165,11 @@ export default {
     }
   },
   methods: {
+    async closeKaraoke(projectName) {
+      this.projectName = null
+      this.projectData = {}
+      await api.post("/close-karaoke")
+    },
     async karaokeSelected(projectName) {
       this.projectName = projectName
       await this.getKaraokeData()

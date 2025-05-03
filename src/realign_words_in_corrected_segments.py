@@ -56,7 +56,16 @@ def realign_words_in_corrected_segments(transcript_fixed_json, audio_mono_wav, l
     index = 0
     for lyrics_txt, audio_mono_wav, segment in zip (lyrics_txt_list, audio_mono_wav_list, segments):
         words_ctm = f"{os.path.dirname(lyrics_txt)}/ctm/words/{os.path.basename(audio_mono_wav).replace('.wav', '.ctm')}"
-        transcript_json = convert_words_ctm_to_transcript(lyrics_txt, words_ctm, force)
+        try:
+            transcript_json = convert_words_ctm_to_transcript(lyrics_txt, words_ctm, force)
+        except:
+            first_word_start = segment["words"][0]["start"]
+            last_word_end = segment["words"][-1]["end"]
+            strech_factor = (segment["end"] - segment["start"])/(last_word_end - first_word_start)
+            for word in segment["words"]:
+                word["start"] = segment["start"] + strech_factor * (word["start"] - first_word_start)
+                word["end"] = segment["start"] + strech_factor * (word["end"] - first_word_start)
+            continue
         with open(transcript_json, mode="r") as fp:
             transcript_segment = json.load(fp)
         shutil.move(transcript_json, f'{os.path.dirname(lyrics_txt)}/transcript-{index:03d}.json')
@@ -68,15 +77,16 @@ def realign_words_in_corrected_segments(transcript_fixed_json, audio_mono_wav, l
             segment["words"].append(word)
         segment["words"][0]["start"] = segment["start"]
         segment["words"][-1]["end"] = segment["end"]
+
     with open(output_file, mode="w") as fp:
         json.dump(transcript_fixed, fp, indent=4)
     return output_file
 
 if __name__ == '__main__':
-    from sample_projects import get_sample_project_dir, get_or_create_sample_project
-    project_name = 'metallica-turn-the-page'
-    project_dir = get_sample_project_dir(project_name)
-    project_data  = get_or_create_sample_project(project_name)
+    from projects import get_project_dir, get_project_data
+    project_name = 'les-fatals-picard-djembe-man'
+    project_data  = get_project_data(project_name, sample_project=False)
+    project_dir = get_project_dir(project_name, sample_project=False)
     language = project_data['language']
 
     convert_wav_to_mono(f'{project_dir}/vocals.wav', force=True)

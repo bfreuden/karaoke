@@ -59,8 +59,8 @@ def generate_karaoke(project_dir, progress=PrintProgressNotifier(STEPS), force=F
         progress.notify("Downloading lyrics")
         lyrics_txt = download_lyrics(genius_url, project_dir, force=force)
 
-        progress.notify("Splitting words into syllables")
-        lyrics_syllables_txt = split_words_into_syllables(lyrics_txt, language, force=force)
+        # progress.notify("Splitting words into syllables")
+        # lyrics_syllables_txt = split_words_into_syllables(lyrics_txt, language, force=force)
 
         progress.notify("Guessing lyrics language")
         language = guess_lyrics_language(lyrics_txt, force=False)
