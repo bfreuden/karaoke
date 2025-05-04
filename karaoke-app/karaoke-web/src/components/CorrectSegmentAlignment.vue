@@ -118,8 +118,14 @@ export default {
       break
     }
     const response2 = await api.get(`/karaoke/${this.projectName}/silence-boundaries`)
-    this.$silenceBoundaries = response2.data.boundaries
-    this.$reversedSilenceBoundaries = [...response2.data.boundaries].reverse()
+    this.$silenceBoundaries = []
+    for (const boundary of response2.data.boundaries) {
+      if (boundary >= 0.25)
+        this.$silenceBoundaries.push(boundary - 0.25)
+        this.$silenceBoundaries.push(boundary + 0.25)
+    }
+
+    this.$reversedSilenceBoundaries = [...this.$silenceBoundaries].reverse()
     // this.loading = false
     // return
     const [audioSurfer, audioRegions] = await this.createWaveSurfer(this.projectData.audio_wav, "#waveform-audio", {height: 0})
