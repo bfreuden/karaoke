@@ -75,6 +75,10 @@ import {api} from "@/api.js";
 import WaveSurfer from 'wavesurfer.js'
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js'
 
+const VALIDATED_COLOR = `rgba(0, 200, 200, 0.3)`
+const UNVALIDATED_COLOR = `rgba(200, 200, 0, 0.3)`
+const SILENCE_BOUNDARY_COLOR = `rgba(255, 0, 0, 0.8)`
+
 export default {
   //components: {VideoWithSubtitles, SegmentAdjuster},
   props: ['width', 'projectName', 'projectData'],
@@ -140,7 +144,7 @@ export default {
     this.$vocalsSurfer.setMuted(true)
 
     for (const segment of segmentsAdjustment.segments) {
-      const color = segment.validated ? `rgba(0, 200, 200, 0.3)` : `rgba(200, 200, 0, 0.3)`
+      const color = segment.validated ? VALIDATED_COLOR : UNVALIDATED_COLOR
       const region = this.$vocalsRegions.addRegion({
         start: segment.start,
         end: segment.end,
@@ -151,16 +155,18 @@ export default {
       })
       region.$lyrics = segment.text
       region.$color = color
-      region.$segmentId = segment.id
+      region.$id = segment.id
+      region.$validated = segment.validated
     }
     for (const silenceBoundary of this.$silenceBoundaries) {
       this.$vocalsRegions.addRegion({
         start: silenceBoundary,
-        color: `rgba(255, 0, 0, 0.8)`,
+        color: SILENCE_BOUNDARY_COLOR,
         drag: false,
         resize: false,
       })
     }
+    this.computeSortedRegions()
 
     this.$vocalsRegions.on('region-in', (region) => {
       if (region.start !== region.end) {
@@ -177,7 +183,7 @@ export default {
         if (self.autoValidation) {
           self.validationPending = true
           self.$validationTimeout = setTimeout(() => {
-            console.log("validating region", region.$segmentId)
+            console.log("validating region", region.$id)
             self.validationPending = false
             self.$validationTimeout = null
             self.validateRegion(region)
@@ -195,11 +201,15 @@ export default {
     //   color: 'rgba(255, 0, 0, 0.1)',
     // })
     //
-    this.$vocalsRegions.on('region-updated', (region) => {
-      console.log('Updated region', region)
+
+    this.$vocalsRegions.on('region-updated', async (region) => {
+
       region.setOptions({
-        color: `rgba(200, 200, 0, 0.3)`
+        color: UNVALIDATED_COLOR
       })
+      const update = {start: region.start, end: region.end, id: region.$id, validated: region.$validated};
+      await api.post(`/karaoke/${this.projectName}/_adjust_segment`, update)
+      await self.maybeRightShiftOtherRegions(region)
     })
 
   // // Loop a region on click
@@ -232,6 +242,9 @@ export default {
     })
   },
   methods: {
+    computeSortedRegions() {
+      this.$sortedRegionsAscending = this.$vocalsRegions.regions.sort((a, b) => a.start - b.start).filter(it => it.end !== it.start).map(it => ({"$id": it.$id, "start": it.start, "end": it.end}))
+    },
     async validateCurrentRegion() {
       if (this.$currentRegion !== null)
         await this.validateRegion(this.$currentRegion)
@@ -244,14 +257,11 @@ export default {
     },
     async validateRegion(region) {
       try {
-        const start = region.start
-        const end = region.end
-        const id = region.$segmentId
-        const validation = {start, end, id};
-        await api.post(`/karaoke/${this.projectName}/_validate_segment`, validation)
+        region.$validated = true
         region.setOptions({
-          color: `rgba(0, 200, 200, 0.3)`
+          color: VALIDATED_COLOR
         })
+        await this.updateRegion(region)
       } catch (error) {
         console.error(error)
       }
@@ -298,7 +308,7 @@ export default {
           return boundary
       return null
     },
-    moveRegionStartToPreviousBoundary() {
+    async moveRegionStartToPreviousBoundary() {
       const region = this.$currentRegion
       if (!region)
         return
@@ -311,16 +321,15 @@ export default {
         region.setOptions({
           start: boundary
         })
-        // region.remove()
-        // const regionDesc = { start: boundary, end, content, color, drag: false, resize: true }
-        // console.log(regionDesc)
-        // const newRegion = this.$vocalsRegions.addRegion(regionDesc)
-        // this.$currentRegion = newRegion
-        // newRegion.$lyrics = content
-        // newRegion.$color = color
+        await this.updateRegion(region)
+        await this.maybeRightShiftOtherRegions(region)
       }
     },
-    moveRegionStartToNextBoundary() {
+    async updateRegion(region) {
+      const validation = {start: region.start, end: region.end, id: region.$id, validated: true};
+      await api.post(`/karaoke/${this.projectName}/_adjust_segment`, validation)
+    },
+    async moveRegionStartToNextBoundary() {
       const region = this.$currentRegion
       if (!region)
         return
@@ -330,21 +339,40 @@ export default {
       const boundary = this.findNextBoundary()
       if (boundary !== null) {
         console.log("update start", boundary)
+        let end = region.end
+        if (boundary >= end) {
+          end = boundary + 0.5
+        }
         region.setOptions({
-          start: boundary
+          start: boundary,
+          end,
         })
-
-        // region.remove()
-        // const regionDesc = { start: boundary, end, content, color, drag: false, resize: true }
-        // console.log(regionDesc)
-        // const newRegion = this.$vocalsRegions.addRegion(regionDesc)
-        // this.$currentRegion = newRegion
-        // newRegion.$lyrics = content
-        // newRegion.$color = color
+        await this.updateRegion(region)
+        await this.maybeRightShiftOtherRegions(region)
       }
 
     },
-    moveRegionEndToPreviousBoundary() {
+    async maybeRightShiftOtherRegions(region) {
+      let initialShift = null
+      const updates = []
+      for (const otherRegion of this.$sortedRegionsAscending) {
+        if (otherRegion.$validated || region.$id === otherRegion.$id)
+          continue
+        if (initialShift === null) {
+          if (otherRegion.start >= region.end)
+            break
+          initialShift = region.end - otherRegion.start + 0.2
+        }
+        otherRegion.setOptions({
+          start: otherRegion.start + initialShift,
+          end: otherRegion.end + initialShift,
+        })
+        updates.push({id: otherRegion.$id, start: otherRegion.start, end: otherRegion.end, validated: otherRegion.$validated})
+      }
+      this.computeSortedRegions()
+      await api.post(`/karaoke/${this.projectName}/_adjust_segments`, updates)
+    },
+    async moveRegionEndToPreviousBoundary() {
       const region = this.$currentRegion
       if (!region)
         return
@@ -354,19 +382,19 @@ export default {
       const boundary = this.findPreviousBoundary()
       if (boundary !== null) {
         console.log("update end", boundary)
+        let start = region.start
+        if (boundary <= start) {
+          start = boundary - 0.5
+        }
         region.setOptions({
+          start: start,
           end: boundary
         })
-        // region.remove()
-        // const regionDesc = { start, end: boundary, content, color, drag: false, resize: true }
-        // console.log(regionDesc)
-        // const newRegion = this.$vocalsRegions.addRegion(regionDesc)
-        // this.$currentRegion = newRegion
-        // newRegion.$lyrics = content
-        // newRegion.$color = color
+        await this.updateRegion(region)
+        await this.maybeRightShiftOtherRegions(region)
       }
     },
-    moveRegionEndToNextBoundary() {
+    async moveRegionEndToNextBoundary() {
       const region = this.$currentRegion
       if (!region)
         return
@@ -379,13 +407,8 @@ export default {
         region.setOptions({
           end: boundary
         })
-        // region.remove()
-        // const regionDesc = { start, end: boundary, content, color, drag: false, resize: true }
-        // console.log(regionDesc)
-        // const newRegion = this.$vocalsRegions.addRegion(regionDesc)
-        // this.$currentRegion = newRegion
-        // newRegion.$lyrics = content
-        // newRegion.$color = color
+        await this.updateRegion(region)
+        await this.maybeRightShiftOtherRegions(region)
       }
 
     },

@@ -420,10 +420,11 @@ class SegmentAdjustment(BaseModel):
     text: str
     validated: bool
 
-class SegmentValidation(BaseModel):
+class SegmentUpdate(BaseModel):
     id: str
     start: float
     end: float
+    validated: bool
 
 class SegmentsAdjustment(BaseModel):
     segments: List[SegmentAdjustment]
@@ -457,10 +458,10 @@ async def get_segments_adjustment(
         return json.load(fp)
 
 
-@api.post("/karaoke/{project_name}/_validate_segment")
+@api.post("/karaoke/{project_name}/_adjust_segment")
 async def adjust_segment(
         project_name: str,
-        validation: SegmentValidation,
+        validation: SegmentUpdate,
         response: Response,
 ):
     segments_adjustment = f'{data_dir}/{project_name}/transcript-fixed.json'
@@ -471,7 +472,7 @@ async def adjust_segment(
         if segment["id"] == validation.id:
             segment["start"] = validation.start
             segment["end"] = validation.end
-            segment["validated"] = True
+            segment["validated"] = validation.validated
             found = True
             break
     if not found:
@@ -480,6 +481,30 @@ async def adjust_segment(
         with open(segments_adjustment, mode="w") as fp:
             json.dump(transcript, fp, indent=4)
         response.status_code = 204
+
+@api.post("/karaoke/{project_name}/_adjust_segments")
+async def adjust_segment(
+        project_name: str,
+        validations: List[SegmentUpdate],
+        response: Response,
+):
+    segments_adjustment = f'{data_dir}/{project_name}/transcript-fixed.json'
+    with open(segments_adjustment, mode="r") as fp:
+        transcript = json.load(fp)
+    for validation in validations:
+        found = False
+        for segment in transcript["segments"]:
+            if segment["id"] == validation.id:
+                segment["start"] = validation.start
+                segment["end"] = validation.end
+                segment["validated"] = validation.validated
+                found = True
+                break
+        if not found:
+            response.status_code = 400
+    with open(segments_adjustment, mode="w") as fp:
+        json.dump(transcript, fp, indent=4)
+    response.status_code = 204
 
 @api.get("/karaoke/{project_name}/silence-boundaries", response_model=SilenceBoundaries)
 async def get_silence_boundaries(
