@@ -51,5 +51,6 @@ def split_vocals_and_accompaniment(audio_mp3, spleeter=False, force=False):
 
 if __name__ == '__main__':
     from projects import get_project_dir
-    project_dir = get_project_dir('slash-ghost-TODO')
-    vocals_wav, accompaniment_wav = split_vocals_and_accompaniment(f'{project_dir}/audio.mp3', spleeter=False, force=True)
+    for project_name in ["kula-shaker-great-hosannah", "poets-of-the-fall-standstill", "poets-of-the-fall-my-dark-disquiet", "afi-medicate", "amy-macdonald-dancing-in-the-dark", "faouzia-thick-and-thin", "les-fatals-picard-djembe-man", "metallica-turn-the-page", "sexion-dassaut-ma-direction", "slash-back-from-cali"]:
+        project_dir = get_project_dir(project_name)
+        vocals_wav, accompaniment_wav = split_vocals_and_accompaniment(f'{project_dir}/audio.mp3', spleeter=False, force=True)
