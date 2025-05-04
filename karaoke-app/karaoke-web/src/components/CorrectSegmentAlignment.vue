@@ -28,6 +28,7 @@
           <v-btn color="primary" class="mr-5" @click="seekPreviousBoundary">précédente (S)</v-btn><v-btn color="primary" @click="seekNextBoundary">suivante (Z)</v-btn>
         </v-col>
         <v-col v-if="!loading" cols="4">
+          <v-checkbox v-model="shiftSegments">Pousser les segments à droite</v-checkbox>
         </v-col>
         <v-col v-if="!loading" cols="4">
           <span class="mr-5">Déplacer le début du segment à la frontière</span>
@@ -49,8 +50,12 @@
           <v-switch v-model="autoValidation" label="Validation automatique en sortie de segment"></v-switch>
         </v-col>
         <v-col v-if="!loading" cols="4">
-          <v-btn color="primary" v-if="!autoValidation" @click="validateCurrentRegion" :disabled="!currentSegment.text">Valider la ligne courante</v-btn>
+          <v-btn color="primary" v-if="!autoValidation" @click="toggleValidation" :disabled="!currentSegment.text">Changer la validation de la ligne courante</v-btn>
+<!--          <v-btn color="primary" v-if="!autoValidation" @click="validateCurrentRegion" :disabled="!currentSegment.text">Valider la ligne courante</v-btn>-->
           <v-btn color="primary" v-if="autoValidation" @click="cancelPreviousValidation" :disabled="!validationPending">Annuler la précédente validation</v-btn>
+        </v-col>
+        <v-col v-if="!loading" cols="4">
+          <v-btn color="primary" @click="playCurrentSegment" :disabled="!currentSegment.text">Jouer le segment</v-btn>
         </v-col>
         <v-col cols="12" :style="`width: ${width}`">
           <div id="waveform-vocals" :style="loading ? 'display:none;' : ''"></div>
@@ -92,6 +97,7 @@ export default {
       end: 0
     },
     time: 0,
+    shiftSegments: false,
   }),
   unmounted() {
     window.removeEventListener("keydown", this.keyPressed)
@@ -99,6 +105,7 @@ export default {
   async mounted() {
     window.addEventListener("keydown", this.keyPressed);
     this.$currentRegion = null
+    this.$stopOnRegionOut = null
     const self = this;
     const response = await api.get(`/karaoke/${this.projectName}/segments-adjustment`)
     const segmentsAdjustment = response.data
@@ -134,9 +141,17 @@ export default {
     })
     this.$vocalsSurfer.on('seeking', (value) => {
       this.$audioSurfer.setTime(value)
+      console.log(value)
+      const currentRegion = this.$vocalsRegions.regions.find(it => it.start <= value && value <= it.end)
+      this.$currentRegion = currentRegion
+      this.currentSegment.text = this.$currentRegion ? this.$currentRegion.$lyrics : ""
     })
     this.$vocalsSurfer.on('interaction', (value) => {
       this.$audioSurfer.setTime(value)
+      console.log(value)
+      const currentRegion = this.$vocalsRegions.regions.find(it => it.start <= value && value <= it.end)
+      this.$currentRegion = currentRegion
+      this.currentSegment.text = this.$currentRegion ? this.$currentRegion.$lyrics : ""
     })
     this.$vocalsSurfer.on('timeupdate', (time) => {
       self.time = time
@@ -169,16 +184,22 @@ export default {
     this.computeSortedRegions()
 
     this.$vocalsRegions.on('region-in', (region) => {
-      if (region.start !== region.end) {
+      const stopOnRegionOut = this.$stopOnRegionOut
+      if (region.start !== region.end && stopOnRegionOut === null) {
         console.log('region-in', region)
         self.$currentRegion = region
         self.currentSegment.text = region.$lyrics
       }
     })
     this.$vocalsRegions.on('region-out', (region) => {
+      const stopOnRegionOut = this.$stopOnRegionOut
+      if (stopOnRegionOut && region.$id === stopOnRegionOut.$id) {
+        this.$audioSurfer.pause()
+        this.$vocalsSurfer.pause()
+        this.$stopOnRegionOut = null
+      }
       if (region.start !== region.end) {
         console.log('region-out', region)
-        self.$currentRegion = region
         self.currentSegment.text = ""
         if (self.autoValidation) {
           self.validationPending = true
@@ -212,27 +233,6 @@ export default {
       await self.maybeRightShiftOtherRegions(region)
     })
 
-  // // Loop a region on click
-  //   let loop = true
-  // // Toggle looping with a checkbox
-  //   document.querySelector('input[type="checkbox"]').onclick = (e) => {
-  //     loop = e.target.checked
-  //   }
-  //
-  //   {
-  //     let activeRegion = null
-  //     regions.on('region-clicked', (region, e) => {
-  //       e.stopPropagation() // prevent triggering a click on the waveform
-  //       activeRegion = region
-  //       region.play(true)
-  //       region.setOptions({color: randomColor()})
-  //     })
-  //     // Reset the active region when the user clicks anywhere in the waveform
-  //     this.$vocalsSurfer.on('interaction', () => {
-  //       activeRegion = null
-  //     })
-  //   }
-
     // Update the zoom level on slider change
     this.$vocalsSurfer.once('decode', () => {
       document.querySelector('input[type="range"]').oninput = (e) => {
@@ -242,8 +242,15 @@ export default {
     })
   },
   methods: {
+    playCurrentSegment() {
+      this.$stopOnRegionOut = this.$currentRegion
+      this.$vocalsSurfer.setTime(this.$currentRegion.start+0.01)
+      this.$audioSurfer.setTime(this.$currentRegion.start+0.01)
+      this.$vocalsSurfer.play()
+      this.$audioSurfer.play()
+    },
     computeSortedRegions() {
-      this.$sortedRegionsAscending = this.$vocalsRegions.regions.sort((a, b) => a.start - b.start).filter(it => it.end !== it.start).map(it => ({"$id": it.$id, "start": it.start, "end": it.end}))
+      this.$sortedRegionsAscending = this.$vocalsRegions.regions.sort((a, b) => a.start - b.start).filter(it => it.end !== it.start).map(it => ({"$id": it.$id, "start": it.start, "end": it.end, "$lyrics": it.$lyrics}))
     },
     async validateCurrentRegion() {
       if (this.$currentRegion !== null)
@@ -325,6 +332,14 @@ export default {
         await this.maybeRightShiftOtherRegions(region)
       }
     },
+    async toggleValidation() {
+      this.$currentRegion.setOptions({
+        color: this.$currentRegion.$validated ? UNVALIDATED_COLOR : VALIDATED_COLOR
+      })
+      this.$currentRegion.$validated = !this.$currentRegion.$validated
+      const validation = {start: this.$currentRegion.start, end: this.$currentRegion.end, id: this.$currentRegion.$id, validated: !this.$currentRegion.$validated};
+      await api.post(`/karaoke/${this.projectName}/_adjust_segment`, validation)
+    },
     async updateRegion(region) {
       const validation = {start: region.start, end: region.end, id: region.$id, validated: true};
       await api.post(`/karaoke/${this.projectName}/_adjust_segment`, validation)
@@ -353,21 +368,38 @@ export default {
 
     },
     async maybeRightShiftOtherRegions(region) {
-      let initialShift = null
+      if (!this.shiftSegments)
+        return
       const updates = []
+      let currentRegionFound = false
+      let previousRegionEnd = false
       for (const otherRegion of this.$sortedRegionsAscending) {
-        if (otherRegion.$validated || region.$id === otherRegion.$id)
+        if (!currentRegionFound) {
+          currentRegionFound = region.$id === otherRegion.$id
+          if (currentRegionFound) {
+            previousRegionEnd = region.end
+          }
           continue
-        if (initialShift === null) {
-          if (otherRegion.start >= region.end)
-            break
-          initialShift = region.end - otherRegion.start + 0.2
         }
-        otherRegion.setOptions({
-          start: otherRegion.start + initialShift,
-          end: otherRegion.end + initialShift,
-        })
-        updates.push({id: otherRegion.$id, start: otherRegion.start, end: otherRegion.end, validated: otherRegion.$validated})
+        if (otherRegion.$validated)
+          continue
+        if (otherRegion.start < previousRegionEnd) {
+          const shift = previousRegionEnd - otherRegion.start
+          const newStart = otherRegion.start + shift
+          let newEnd = otherRegion.end + shift
+          if (newEnd <= (newStart + 0.5))
+            newEnd = newStart + 0.5
+          previousRegionEnd = newEnd
+          const otherRealRegion = this.$vocalsRegions.regions.find(it => it.$id === otherRegion.$id)
+          otherRealRegion.setOptions({
+            start: newStart,
+            end: newEnd,
+          })
+          updates.push({id: otherRealRegion.$id, start: otherRealRegion.start, end: otherRealRegion.end, validated: false})
+
+        } else {
+          break
+        }
       }
       this.computeSortedRegions()
       await api.post(`/karaoke/${this.projectName}/_adjust_segments`, updates)
