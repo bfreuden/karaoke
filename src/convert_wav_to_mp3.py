@@ -13,7 +13,8 @@ def convert_wav_to_mp3(audio_wav, force=False):
     return audio_mp3
 
 if __name__ == '__main__':
-    from sample_projects import get_sample_project_dir
-    project_dir = get_sample_project_dir('afi-medicate')
-    convert_wav_to_mp3(f'{project_dir}/vocals.wav', force=True)
+    from projects import get_project_dir
+    project_dir = get_project_dir('amy-macdonald-dancing-in-the-dark', sample_project=False)
+    # convert_wav_to_mp3(f'{project_dir}/audio_\\(Instrumental\\)_model_bs_roformer_ep_317_sdr_12.flac', force=True)
+    # convert_wav_to_mp3(f'{project_dir}/vocals.wav', force=True)
     convert_wav_to_mp3(f'{project_dir}/accompaniment.wav', force=True)

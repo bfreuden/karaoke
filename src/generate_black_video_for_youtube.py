@@ -25,5 +25,5 @@ def generate_black_video_for_youtube(subtitles_ass, audio_mp3, font_size=24, mar
 
 if __name__ == '__main__':
     from projects import get_project_dir
-    project_dir = get_project_dir('les-fatals-picard-djembe-man')
+    project_dir = get_project_dir('sexion-dassaut-ma-direction')
     generate_black_video_for_youtube(f'{project_dir}/subtitles-words-karaoke.ass', f'{project_dir}/accompaniment.mp3', force=True)
