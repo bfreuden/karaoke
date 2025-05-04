@@ -137,10 +137,10 @@ def generate_karaoke(project_dir, progress=PrintProgressNotifier(STEPS), force=F
 
 if __name__ == '__main__':
 
-    from sample_projects import sample_projects, get_or_create_sample_project
+    from projects import get_project_data, get_project_dir
     # project_names = sample_projects.keys()
 
-    project_names = [ 'metallica-turn-the-page' ]
+    project_names = [ 'kula-shaker-great-hosannah' ]
 
     # https://pypi.org/project/eng-syl/
     # https://github.com/Kozea/Pyphen
@@ -148,7 +148,7 @@ if __name__ == '__main__':
 
     for project_name in project_names:
         try:
-            project_data = get_or_create_sample_project(project_name)
+            project_data = get_project_data(project_name)
 
             print("-- Creating project")
             get_or_create_project_from_data(project_data, force=False)

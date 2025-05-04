@@ -28,7 +28,7 @@
           <v-btn color="primary" class="mr-5" @click="seekPreviousBoundary">précédente (S)</v-btn><v-btn color="primary" @click="seekNextBoundary">suivante (Z)</v-btn>
         </v-col>
         <v-col v-if="!loading" cols="4">
-          <v-checkbox v-model="shiftSegments">Pousser les segments à droite</v-checkbox>
+          <v-switch density="compact" v-model="shiftSegments" label="Pousser les segments à droite"></v-switch>
         </v-col>
         <v-col v-if="!loading" cols="4">
           <span class="mr-5">Déplacer le début du segment à la frontière</span>
@@ -37,6 +37,7 @@
           <v-btn color="primary" class="mr-5" @click="moveRegionStartToPreviousBoundary">précédente (Q)</v-btn><v-btn color="primary" @click="moveRegionStartToNextBoundary">suivante (A)</v-btn>
         </v-col>
         <v-col v-if="!loading" cols="4">
+          <v-btn color="primary" @click="moveNextSegmentHere">Ramener le prochain segment ici</v-btn>
         </v-col>
         <v-col v-if="!loading" cols="4">
           <span class="mr-5">Déplacer la fin du segment à la frontière</span>
@@ -50,7 +51,7 @@
           <v-switch v-model="autoValidation" label="Validation automatique en sortie de segment"></v-switch>
         </v-col>
         <v-col v-if="!loading" cols="4">
-          <v-btn color="primary" v-if="!autoValidation" @click="toggleValidation" :disabled="!currentSegment.text">Changer la validation de la ligne courante</v-btn>
+          <v-btn color="primary" v-if="!autoValidation" @click="toggleValidation" :disabled="!currentSegment.text">Changer la validation du segment courant</v-btn>
 <!--          <v-btn color="primary" v-if="!autoValidation" @click="validateCurrentRegion" :disabled="!currentSegment.text">Valider la ligne courante</v-btn>-->
           <v-btn color="primary" v-if="autoValidation" @click="cancelPreviousValidation" :disabled="!validationPending">Annuler la précédente validation</v-btn>
         </v-col>
@@ -231,6 +232,7 @@ export default {
       const update = {start: region.start, end: region.end, id: region.$id, validated: region.$validated};
       await api.post(`/karaoke/${this.projectName}/_adjust_segment`, update)
       await self.maybeRightShiftOtherRegions(region)
+      this.computeSortedRegions()
     })
 
     // Update the zoom level on slider change
@@ -242,6 +244,21 @@ export default {
     })
   },
   methods: {
+    async moveNextSegmentHere() {
+      for (const region of this.$sortedRegionsAscending) {
+        if (region.start > this.time) {
+          const shift = this.time - region.start
+          const realRegion = this.$vocalsRegions.regions.find(it => it.$id === region.$id)
+          realRegion.setOptions({
+            start: region.start + shift + 0.01,
+            end: region.end + shift + 0.01,
+          })
+          await this.updateRegion(realRegion)
+          this.computeSortedRegions()
+          break
+        }
+      }
+    },
     playCurrentSegment() {
       this.$stopOnRegionOut = this.$currentRegion
       this.$vocalsSurfer.setTime(this.$currentRegion.start+0.01)
@@ -330,6 +347,7 @@ export default {
         })
         await this.updateRegion(region)
         await this.maybeRightShiftOtherRegions(region)
+        this.computeSortedRegions()
       }
     },
     async toggleValidation() {
@@ -341,7 +359,7 @@ export default {
       await api.post(`/karaoke/${this.projectName}/_adjust_segment`, validation)
     },
     async updateRegion(region) {
-      const validation = {start: region.start, end: region.end, id: region.$id, validated: true};
+      const validation = {start: region.start, end: region.end, id: region.$id, validated: region.$validated};
       await api.post(`/karaoke/${this.projectName}/_adjust_segment`, validation)
     },
     async moveRegionStartToNextBoundary() {
@@ -364,6 +382,7 @@ export default {
         })
         await this.updateRegion(region)
         await this.maybeRightShiftOtherRegions(region)
+        this.computeSortedRegions()
       }
 
     },
@@ -401,7 +420,6 @@ export default {
           break
         }
       }
-      this.computeSortedRegions()
       await api.post(`/karaoke/${this.projectName}/_adjust_segments`, updates)
     },
     async moveRegionEndToPreviousBoundary() {
@@ -424,6 +442,7 @@ export default {
         })
         await this.updateRegion(region)
         await this.maybeRightShiftOtherRegions(region)
+        this.computeSortedRegions()
       }
     },
     async moveRegionEndToNextBoundary() {
@@ -441,6 +460,7 @@ export default {
         })
         await this.updateRegion(region)
         await this.maybeRightShiftOtherRegions(region)
+        this.computeSortedRegions()
       }
 
     },
