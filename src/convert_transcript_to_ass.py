@@ -43,7 +43,7 @@ def ass_time(seconds):
 
 
 if __name__ == '__main__':
-    from sample_projects import get_sample_project_dir
-    project_name = 'afi-medicate'
-    project_dir = get_sample_project_dir(project_name)
+    from projects import get_project_dir, get_project_data
+    project_name = 'slash-far-and-away'
+    project_dir = get_project_dir(project_name)
     convert_transcript_to_segments_ass(f'{project_dir}/transcript.json', force=True)

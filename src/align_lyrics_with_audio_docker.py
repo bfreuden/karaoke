@@ -43,7 +43,8 @@ def align_lyrics_with_audio(audio_mono_wav_or_list, lyrics_txt_or_list, language
     return words_ctm
 
 if __name__ == '__main__':
-    from sample_projects import get_sample_project_items
-    project_name = 'afi-medicate'
-    project_dir, model = get_sample_project_items(project_name, 'project_dir', 'language')
-    tokens = align_lyrics_with_audio(f'{project_dir}/vocals-mono.wav', f'{project_dir}/lyrics.txt', model, force=True)
+    from projects import get_project_dir, get_project_data
+    project_name = 'slash-far-and-away'
+    project_dir = get_project_dir(project_name)
+    language = get_project_data(project_name)['language']
+    tokens = align_lyrics_with_audio(f'{project_dir}/vocals-no-silence-mono.wav', f'{project_dir}/lyrics.txt', language, force=True)

@@ -286,9 +286,9 @@ if __name__ == '__main__':
         dry_run = args.dry_run
         split_audio(input_filename, None, output_dir, silence_threshold, min_silence_length, step_duration, dry_run)
     else:
-        from sample_projects import get_sample_project_dir
-        project_name = 'afi-medicate'
-        project_dir = get_sample_project_dir(project_name)
+        from projects import get_project_dir
+        project_name = 'slash-far-and-away'
+        project_dir = get_project_dir(project_name)
         split_audio(f'{project_dir}/vocals.wav', f'{project_dir}/audio.wav', silence_threshold=0.001, remove_silences=True, min_silence_length=0.5, split_file=True, force=True)
 
 

@@ -55,8 +55,7 @@ def convert_words_ctm_to_transcript(lyrics_txt, words_ctm, force=False):
     return transcript
 
 if __name__ == '__main__':
-    from sample_projects import get_sample_project_items
-
-    project_name = 'afi-medicate'
-    project_dir,  = get_sample_project_items(project_name, 'project_dir', )
-    convert_words_ctm_to_transcript(f"{project_dir}/lyrics.txt", f"{project_dir}/ctm/words/vocals-mono.ctm", force=True)
+    from projects import get_project_dir, get_project_data
+    project_name = 'slash-far-and-away'
+    project_dir = get_project_dir(project_name)
+    convert_words_ctm_to_transcript(f"{project_dir}/lyrics.txt", f"{project_dir}/ctm/words/vocals-no-silence-mono.ctm", force=True)

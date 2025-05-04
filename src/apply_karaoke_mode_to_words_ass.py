@@ -66,8 +66,8 @@ def ass_time(seconds):
 
 
 if __name__ == '__main__':
-    from projects import get_project_dir
-
-    project_name = 'les-fatals-picards-djembe-man'
-    project_dir = get_project_dir(project_name, sample_project=False)
-    apply_karaoke_mode_to_words_ass(f'{project_dir}/subtitles-words-fixed.ass', force=True)
+    from projects import get_project_dir, get_project_data
+    project_name = 'slash-far-and-away'
+    project_dir = get_project_dir(project_name)
+    apply_karaoke_mode_to_words_ass(f'{project_dir}/subtitles-words.ass', force=True)
+    # apply_karaoke_mode_to_words_ass(f'{project_dir}/subtitles-words-fixed.ass', force=True)

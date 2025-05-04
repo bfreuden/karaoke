@@ -14,7 +14,7 @@ def convert_wav_to_mono(audio_wav, force=False):
     return audio_mono_wav
 
 if __name__ == '__main__':
-    from sample_projects import get_sample_project_dir
-    project_name = 'afi-medicate'
-    project_dir = get_sample_project_dir(project_name)
-    convert_wav_to_mono(f'{project_dir}/audio.wav', force=True)
+    from projects import get_project_dir
+    project_name = 'slash-far-and-away'
+    project_dir = get_project_dir(project_name)
+    convert_wav_to_mono(f'{project_dir}/vocals-no-silence.wav', force=True)

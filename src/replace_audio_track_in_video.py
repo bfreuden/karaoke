@@ -14,7 +14,7 @@ def replace_audio_track_in_video(video_mp4, accompaniment_mp3, force=False):
     return video_accompaniment_mp4
 
 if __name__ == '__main__':
-    from sample_projects import get_sample_project_dir
-    project_name = 'afi-medicate'
-    project_dir = get_sample_project_dir(project_name)
+    from projects import get_project_dir, get_project_data
+    project_name = 'slash-far-and-away'
+    project_dir = get_project_dir(project_name)
     replace_audio_track_in_video(f'{project_dir}/video.mp4', f'{project_dir}/accompaniment.mp3', force=True)
