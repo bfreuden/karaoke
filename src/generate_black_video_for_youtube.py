@@ -2,7 +2,7 @@ import os.path
 import tempfile
 import re
 
-def generate_black_video_for_youtube(subtitles_ass, audio_mp3, font_size=24, margin_v=120, force=False):
+def generate_black_video_for_youtube(subtitles_ass, audio_mp3, font_size=24, margin_v=120, pitch_adjustment_semitones= None, force=False):
     project_dir = os.path.abspath(os.path.dirname(subtitles_ass))
     video_karaoke_black_mp4 = os.path.abspath(f"{project_dir}/video-karaoke-black.mp4")
     if os.path.exists(video_karaoke_black_mp4):
@@ -19,11 +19,21 @@ def generate_black_video_for_youtube(subtitles_ass, audio_mp3, font_size=24, mar
     with tempfile.NamedTemporaryFile() as tmp:
         with open(tmp.name, mode='w') as fp:
             fp.write(modified_content)
-        os.system(f'ffmpeg -f lavfi -i color=c=black:s=1920x1080:r=5  -filter_complex ass={tmp.name}  -i {audio_mp3} -crf 0 -c:a copy   -c:v libx264 -crf 23 -preset fast -shortest {video_karaoke_black_mp4}')
+        pitch_adjustment_options = "" # not tested
+        if pitch_adjustment_semitones is not None:
+            if pitch_adjustment_semitones > 0:
+                frequency_factor = 1.059463035 ** pitch_adjustment_semitones
+            else:
+                frequency_factor = 1.059463035 ** (1.0/pitch_adjustment_semitones)
+            pitch_adjustment_options = f'-af asetrate=44100*{frequency_factor},aresample=44100,atempo=1/{frequency_factor}'
+
+        mp3_conversion_options = "-vn -ar 44100 -ac 2 -b:a 192k" if audio_mp3.endswith(".wav") else ""  # not tested
+        os.system(f'ffmpeg -f lavfi -i color=c=black:s=1920x1080:r=5  -filter_complex ass={tmp.name}  -i {audio_mp3} {pitch_adjustment_options} -crf 0 -c:a copy {mp3_conversion_options} -c:v libx264 -crf 23 -preset fast -shortest {video_karaoke_black_mp4}')
 
     return video_karaoke_black_mp4
 
 if __name__ == '__main__':
     from projects import get_project_dir
-    project_dir = get_project_dir('sexion-dassaut-ma-direction')
+    project_dir = get_project_dir('slash-ghost')
+    # generate_black_video_for_youtube(f'{project_dir}/subtitles-words-karaoke.ass', f'{project_dir}/accompaniment.mp3', force=True)
     generate_black_video_for_youtube(f'{project_dir}/subtitles-words-karaoke.ass', f'{project_dir}/accompaniment.mp3', force=True)
